@@ -8,9 +8,9 @@ class Walker(object):
     def step(self):
         self.x = map(noise(self.tx), 0, 1, 0, width)
         self.y = map(noise(self.ty), 0, 1, 0, height)
-        self.tx += 0.01
-        self.ty += 0.01
-        print(self.x, self.y)
+        self.xoff += 0.01
+        self.yoff += 0.01
+        print(self.xoff, self.yoff)
 
     def render(self):
         stroke(0)
