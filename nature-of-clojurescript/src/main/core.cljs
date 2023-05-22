@@ -1,15 +1,27 @@
 (ns core
   (:require [quil.core :as q :include-macros true]))
 
+(defn setup []
+  (q/frame-rate 0.1)
+  (q/background 200))
+
 (defn draw []
-  (q/background 255)
-  (q/fill 0)
-  (q/ellipse 56 46 55 55))
+  (q/stroke (q/random 255))
+  (q/stroke-weight (q/random 10))
+  (q/clear)
+  (q/background 200)
+  (q/fill (q/random 255))
+
+  (let [diam (q/random 200)
+        x (/ (q/width) 2)
+        y (/ (q/height) 2)]
+    (q/ellipse x y diam diam)))
 
 (q/defsketch hello
+  :setup setup
   :draw draw
   :host "test"
-  :size [300 300])
+  :size [323 200])
 
 (defn init []
   (println  "test")
