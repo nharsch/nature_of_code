@@ -2,4 +2,4 @@
   (:require [intro]))
 
 (defn init []
-  (println "test"))
+  (println "start"))
