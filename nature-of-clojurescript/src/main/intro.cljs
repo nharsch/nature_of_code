@@ -3,32 +3,36 @@
             [goog.dom :as d]
             [p5 :as p5]))
 
-;; (defonce perlin-div (d/getEelment "perlin-noise"))
-;;
-;; (println
+; set xoff at beginning of 1D noise space
+(defonce xoff (atom 0))
+; set yoff for from xoff, different part of noise space
+(defonce yoff (atom 10000))
+(defonce start (atom 0))
+(def height 320)
+(def width 640)
+(def speed 0.01)
+(def drift-range 10)
 
 
 (defn perlin-setup [p]
-  (.createCanvas p 640 640)
+  (.createCanvas p width height)
   (.frameRate p 30))
 
-(defonce xoff (atom 0))
-(defonce yoff (atom 0))
-
-(def speed 0.02)
-(def drift-range 10)
-
 (defn perlin-draw [p]
-  (.background p 100)
-  (.fill p 200)
-  (.stroke p 200)
-  (reset! xoff (+ @xoff speed))
-  (reset! yoff (+ @yoff speed))
-  ;; subtle movement
-  (.ellipse p
-            (+ (.-mouseX p) (.map p (.noise p @xoff) 0 1 (* -1 drift-range) drift-range))
-            (+ (.-mouseY p) (.map p (.noise p @yoff) 0 1 (* -1 drift-range) drift-range))
-            24 24))
+  (.background p 80)
+  (.beginShape p)
+  (.stroke p 255)
+  (.noFill p)
+  (doseq [x (range width)]
+    (do
+     (reset! xoff (+ @xoff speed))
+     (.stroke p 255)
+     (.vertex p x (* (.noise p @xoff) height))
+     ))
+  (.endShape p)
+  (reset! start (+ @start speed)))
+
+
 
 (def perlin
   (new p5

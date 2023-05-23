@@ -7,8 +7,7 @@
  :dev-http {8080 "public"}
 
  :dependencies
- [[cider/cider-nrepl "0.22.0"]
-  ]
+ [[cider/cider-nrepl "0.25.9"]]
 
  :builds
  {:frontend
