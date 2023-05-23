@@ -1,7 +1,8 @@
 (ns intro
   (:require [goog.object :as g]
             [goog.dom :as d]
-            [p5 :as p5]))
+            [p5 :as p5]
+            [util :as u]))
 
 ; set xoff at beginning of 1D noise space
 ;; (defonce xoff (atom 0))
@@ -35,37 +36,59 @@
 
 
 (def one-d-perlin
-  (new p5
-       (fn [p]
-         (set! (.-setup p) (fn [] (perlin-setup p)))
-         (set! (.-draw p) (fn [] (perlin-draw p))))
-       "1D-perlin-noise"))
+  (u/render-sketch-to-canvas
+   (fn [p]
+          (set! (.-setup p) (fn [] (perlin-setup p)))
+          (set! (.-draw p) (fn [] (perlin-draw p))))
+        "1D-perlin-noise"))
 
 (defonce zoff (atom 0))
 (defn two-d-perlin-draw [p]
-  (.loadPixels p)
+  ;; retina display fix
   (.pixelDensity p 1)
-  (let [yoff (atom 0)]
-    (doseq [y (range height)]
-      (let [xoff (atom 0)]
-        (doseq [x (range width)]
-          ;; update pixel
-          (let [index (* 4 (+ x (* y width)))
-                r (* (.noise p @xoff @yoff @zoff) 255)]
-            (do
-                                        ; TODO: clean this up
-              (aset (.-pixels p) index r)
-              (aset (.-pixels p) (+ index 1) r)
-              (aset (.-pixels p) (+ index 2) r)
-              (aset (.-pixels p) (+ index 3) 255))
-            (reset! xoff (+ @xoff speed)))))
-      (reset! yoff (+ @yoff speed))))
+  (.loadPixels p)
+  (doseq [y (range height)
+          x (range width)]
+    (let [r (* (.noise p (* x speed) (* y speed) @zoff) 255)
+          index (get-pix-index-for-canvas width x y)]
+      (do
+        (aset (.-pixels p) index r)
+        (aset (.-pixels p) (+ index 1) r)
+        (aset (.-pixels p) (+ index 2) r)
+        (aset (.-pixels p) (+ index 3) 255))))
+  ;; NOTE: I prefer this style, but it bogs down rendering as I swap the whole array value each time instead of setting them directly
+  ;; (set! (. p -pixels)
+  ;;       (js/Uint8ClampedArray. (clj->js (reduce into
+  ;;                                              (for [y (range height)
+  ;;                                                    x (range width)]
+  ;;                                                ;; get noise value
+  ;;                                                (let [r (* (.noise p (* x speed) (* y speed) @zoff) 255)]
+  ;;                                                  [r r r 255]))))))
   (.updatePixels p)
-  (reset! zoff (+ @zoff (/ speed 2))))
+  ;; move through z axis every draw loop
+  (reset! zoff (+ @zoff (* speed 0.7))))
+
+(defn get-pix-index-for-canvas [width x y]
+  (* 4 (+ x (* y width))))
+
+
+(comment
+  (/ 3276800 4)
+  (js/Uint8ClampedArray. [0 255 400])
+  (* 4 width height)
+  (count (reduce into (for [y (range 10)
+                            x (range 10)]
+                        [0 1 2 3])))
+  (reduce into (for [x (range width)
+                     y (range height)]
+                 ['a 'b 'c 'd]))
+  (get-pix-index-for-canvas width 0 0)
+  )
+
 
 (def two-d-perlin
-  (new p5
-       (fn [p]
-         (set! (.-setup p) (fn [] (perlin-setup p)))
-         (set! (.-draw p) (fn [] (two-d-perlin-draw p))))
-       "2D-perlin-noise"))
+  (u/render-sketch-to-canvas
+   (fn [p]
+     (set! (.-setup p) (fn [] (perlin-setup p)))
+     (set! (.-draw p) (fn [] (two-d-perlin-draw p))))
+   "2D-perlin-noise"))
