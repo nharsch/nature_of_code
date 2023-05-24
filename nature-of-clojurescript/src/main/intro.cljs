@@ -35,12 +35,10 @@
   (reset! start (+ @start speed)))
 
 
-(def one-d-perlin
-  (u/render-sketch-to-canvas
-   (fn [p]
-          (set! (.-setup p) (fn [] (perlin-setup p)))
-          (set! (.-draw p) (fn [] (perlin-draw p))))
-        "1D-perlin-noise"))
+(u/render-sketch-to-canvas
+ perlin-setup
+ perlin-draw
+ "1D-perlin-noise")
 
 (defonce zoff (atom 0))
 (defn two-d-perlin-draw [p]
@@ -86,9 +84,4 @@
   )
 
 
-(def two-d-perlin
-  (u/render-sketch-to-canvas
-   (fn [p]
-     (set! (.-setup p) (fn [] (perlin-setup p)))
-     (set! (.-draw p) (fn [] (two-d-perlin-draw p))))
-   "2D-perlin-noise"))
+(u/render-sketch-to-canvas perlin-setup two-d-perlin-draw "2D-perlin-noise")
