@@ -1,4 +1,4 @@
-(ns util (:require [p5 :as p5]))
+(ns util (:require [p5 :refer [Vector]]))
 
 
 (defn render-sketch-to-canvas [setup-fn draw-fn id]
@@ -10,5 +10,12 @@
 
 (defn text-on-canvas [p text color]
   (do
+    (.noStroke p)
     (.fill p color)
     (.text p text 10 10)))
+
+(defn weighted-random-vec [xprob yprob]
+  (let [xr (- (rand 2) 1)
+        yr (- (rand 2) 1)]
+    (Vector. (if (< xprob xr) -1 1)
+             (if (< yprob yr) -1 1))))
