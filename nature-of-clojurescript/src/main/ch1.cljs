@@ -2,7 +2,6 @@
   (:require [util :as u]
             [p5 :refer [Vector]]))
 
-
 (comment
   (.createVector (p5.))
   (createVector)
@@ -32,4 +31,4 @@
     (swap! state assoc :pos
            (.add (:pos @state) (.random2D Vector)))))
 
-(u/render-sketch-to-canvas setup draw "canvas")
+(u/render-sketch-to-canvas setup draw "ch1-canvas")

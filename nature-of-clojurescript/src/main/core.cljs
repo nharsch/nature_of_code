@@ -1,7 +1,7 @@
 (ns core
-  (:require [intro]
-            [ch1]
-            ))
+  (:require
+   [intro]
+   [ch1]))
 
 (defn init []
-  (println "start"))
+  (println "start sketches"))

@@ -1,14 +1,12 @@
 (ns intro
-  (:require [goog.object :as g]
-            [goog.dom :as d]
-            [p5 :as p5]
-            [util :as u]))
+  (:require [util :as u]))
 
 ; set xoff at beginning of 1D noise space
 ;; (defonce xoff (atom 0))
 ; set yoff for from xoff, different part of noise space
 ;; (defonce yoff (atom 10000))
 (defonce start (atom 0))
+(def canvas-name "intro-canvas")
 (def height 320)
 (def width 640)
 (def speed 0.01)
@@ -32,15 +30,17 @@
      (.vertex p x (* (.noise p @xoff) height))
      ))
   (.endShape p)
+  (u/text-on-canvas p "1d perlin noise" 255)
   (reset! start (+ @start speed)))
 
 
-(u/render-sketch-to-canvas
- perlin-setup
- perlin-draw
- "1D-perlin-noise")
+
 
 (defonce zoff (atom 0))
+
+(defn get-pix-index-for-canvas [width x y]
+  (* 4 (+ x (* y width))))
+
 (defn two-d-perlin-draw [p]
   ;; retina display fix
   (.pixelDensity p 1)
@@ -64,24 +64,40 @@
   ;;                                                  [r r r 255]))))))
   (.updatePixels p)
   ;; move through z axis every draw loop
+  (u/text-on-canvas p "2d perlin noise" 255)
   (reset! zoff (+ @zoff (* speed 0.7))))
 
-(defn get-pix-index-for-canvas [width x y]
-  (* 4 (+ x (* y width))))
 
+
+
+
+
+;; random number distribution
+;;
+(def randomCounts (atom (vec (replicate 20 0))))
+(defn rc-setup [p]
+  (.createCanvas p width height))
 
 (comment
-  (/ 3276800 4)
-  (js/Uint8ClampedArray. [0 255 400])
-  (* 4 width height)
-  (count (reduce into (for [y (range 10)
-                            x (range 10)]
-                        [0 1 2 3])))
-  (reduce into (for [x (range width)
-                     y (range height)]
-                 ['a 'b 'c 'd]))
-  (get-pix-index-for-canvas width 0 0)
+  (update [0 1] 0 inc)
+  (count @randomCounts))
+
+(defn rc-draw [p]
+  (.background p 255)
+  (swap! randomCounts
+         (fn [rc] (update rc (rand-int (count rc)) inc)))
+  (.stroke p 0)
+  (.fill p 175)
+  (let [w (/ width (count @randomCounts))]
+    (doseq [x (range (count @randomCounts))]
+      (.rect p
+             (* x w) (- height (nth @randomCounts x))
+             (- w 1) (nth @randomCounts x))))
+  (u/text-on-canvas p "random number distro" 0)
   )
 
-
-(u/render-sketch-to-canvas perlin-setup two-d-perlin-draw "2D-perlin-noise")
+(do
+  (u/render-sketch-to-canvas perlin-setup perlin-draw canvas-name)
+  (u/render-sketch-to-canvas perlin-setup two-d-perlin-draw canvas-name)
+  (u/render-sketch-to-canvas rc-setup rc-draw canvas-name)
+)
