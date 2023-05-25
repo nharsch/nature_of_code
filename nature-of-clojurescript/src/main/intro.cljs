@@ -115,8 +115,9 @@
     (.point p (.-x (:pos @walker-state))
               (.-y (:pos @walker-state)))
     (swap! walker-state assoc :pos
-           (.add (:pos @walker-state)
-                 (u/weighted-random-vec 0.3 0)))))
+           (.add Vector
+                 (:pos @walker-state)
+                 (u/weighted-random-vec 0.3 0 1)))))
 
 ; gaussian distro
 (defn gaus-setup [p]
@@ -133,6 +134,35 @@
     )
   (u/text-on-canvas p "gaussian distro" 0))
 
+;; custom distribution
+(comment
+  (u/weighted-random-vec 0 0 10)
+  )
+
+
+(defonce monte-walker-state (atom {}))
+
+(defn monte-setup-walker [p]
+  (.createCanvas p width height)
+  (.background p 0)
+  (swap! monte-walker-state assoc :pos
+         (.createVector p (/ width 2) (/ height 2))))
+
+(defn draw-mont-walker [p]
+  (do
+    (u/text-on-canvas p "random walker - montecarlo" 255)
+    (.stroke p 255 100)
+    (.strokeWeight p 2)
+    (let [new-pos (.add Vector
+                        (:pos @monte-walker-state)
+                        (u/weighted-random-vec 0.3 0
+                                               (Math/floor (* 10 (u/montecarlo)))))]
+      (.line p (.-x (:pos @monte-walker-state))
+               (.-y (:pos @monte-walker-state))
+               (.-x new-pos)
+               (.-y new-pos))
+      (.stroke p 126)
+      (swap! monte-walker-state assoc :pos new-pos))))
 
 (do
   (u/render-sketch-to-canvas perlin-setup perlin-draw canvas-name)
@@ -140,4 +170,5 @@
   (u/render-sketch-to-canvas rc-setup rc-draw canvas-name)
   (u/render-sketch-to-canvas setup-walker draw-walker canvas-name)
   (u/render-sketch-to-canvas gaus-setup gaus-draw canvas-name)
+  (u/render-sketch-to-canvas monte-setup-walker draw-mont-walker canvas-name)
   )

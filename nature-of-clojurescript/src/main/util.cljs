@@ -14,8 +14,13 @@
     (.fill p color)
     (.text p text 10 10)))
 
-(defn weighted-random-vec [xprob yprob]
+(defn weighted-random-vec [xprob yprob dist]
   (let [xr (- (rand 2) 1)
         yr (- (rand 2) 1)]
-    (Vector. (if (< xprob xr) -1 1)
-             (if (< yprob yr) -1 1))))
+    (Vector. (if (< xprob xr) (* dist -1) dist)
+             (if (< yprob yr) (* dist -1) dist))))
+
+(defn montecarlo []
+  (let [r1 (rand 1)
+        r2 (rand 1)]
+    (if (< r2 r1) r1 (montecarlo))))
