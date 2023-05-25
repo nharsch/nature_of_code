@@ -2,6 +2,7 @@
   (:require [util :as u]
             [p5 :refer [Vector]]))
 
+
 ; set xoff at beginning of 1D noise space
 ;; (defonce xoff (atom 0))
 ; set yoff for from xoff, different part of noise space
@@ -164,6 +165,46 @@
       (.stroke p 126)
       (swap! monte-walker-state assoc :pos new-pos))))
 
+(defn perlin-landscape-setup [p]
+  (.createCanvas p width height (.-WEBGL p))
+  (u/text-on-canvas p "perlin landscape" 0)
+  )
+
+(def perlin-landscape-state (atom
+                             {:cell 10
+                              :step 0.05
+                              :mag 10}))
+
+
+(defn perlin-landscape-draw [p]
+  (.stroke p 80)
+  (.fill p 255)
+  ;; (.rotateZ p 1)
+  (.translate p -100 -80 0)
+  (.rotateX p 0.75)
+  (.clear p)
+  (let [cell 10
+        noise-size 0.05
+        step (:step @perlin-landscape-state)
+        mag 100]
+    (doseq [y (range 20)]
+      (.beginShape p (.-QUAD_STRIP p))
+      (doseq [x (range 20)]
+        (let [n1 (.noise p (+ step (* noise-size x)) (* noise-size y))
+              n2 (.noise p (+ step (* noise-size x)) (* noise-size (+ 1 y)))]
+          (.vertex p
+                   (* cell x)
+                   (* cell y)
+                   (* mag n1))
+          (.vertex p
+                   (* cell x)
+                   (* (+ 1 y) cell)
+                   (* mag n2))))
+      (.endShape p)))
+  (swap! perlin-landscape-state update :step #(+ % 0.005))
+)
+;; (:step @perlin-landscape-state)
+
 (do
   (u/render-sketch-to-canvas perlin-setup perlin-draw canvas-name)
   (u/render-sketch-to-canvas perlin-setup two-d-perlin-draw canvas-name)
@@ -171,4 +212,5 @@
   (u/render-sketch-to-canvas setup-walker draw-walker canvas-name)
   (u/render-sketch-to-canvas gaus-setup gaus-draw canvas-name)
   (u/render-sketch-to-canvas monte-setup-walker draw-mont-walker canvas-name)
+  (u/render-sketch-to-canvas perlin-landscape-setup perlin-landscape-draw canvas-name)
   )
