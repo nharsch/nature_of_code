@@ -1,6 +1,7 @@
 (ns ch1
   (:require [util :as u]
-            [p5 :refer [Vector]]))
+            [p5 :refer [Vector]]
+            [quil.core :as q :include-macros true]))
 
 (comment
   (.createVector (p5.))
@@ -15,20 +16,49 @@
 
 (defonce state (atom {}))
 
-(defn setup [p]
-  (.createP p "random walk")
+(defn setup []
+  (swap! state assoc :pos
+         (Vector. (/ width 2) (/ height 2)))
+  (swap! state assoc :vel
+         (Vector. 0.05 0.05)))
+
+(defn draw []
+  (q/background 0)
+  (q/stroke 155 100)
+  (q/stroke-weight 2)
+  (q/ellipse (.-x (.add Vector (:pos @state) (:vel @state)))
+             (.-y (.add Vector (:pos @state) (:vel @state)))
+             30 30)
+    (swap! state assoc :pos
+           (.add Vector (:pos @state) (:vel @state))))
+
+
+(q/defsketch example                  ;; Define a new sketch named example
+  :host "ch1-canvas"
+  :title "ball moves"    ;; Set the title of the sketch
+  :settings #(q/smooth 2)             ;; Turn on anti-aliasing
+  :setup setup                        ;; Specify the setup fn
+  :draw draw                          ;; Specify the draw fn
+  :size [width height])                    ;; You struggle to beat the golden ratio
+
+(defn setup-rv [p]
   (.createCanvas p width height)
   (.background p 0)
   (swap! state assoc :pos
-         (.createVector p (/ width 2) (/ height 2))))
+         (.createVector p (/ width 2) (/ height 2)))
+  (swap! state assoc :vel
+         (.createVector p 1 0)))
 
-(defn draw [p]
+(defn draw-rv [p]
   (do
-    (.stroke p 255 100)
+    (.stroke p 0 60)
     (.strokeWeight p 2)
-    (.point p (.-x (:pos @state))
-              (.-y (:pos @state)))
-    (swap! state assoc :pos
-           (.add (:pos @state) (.random2D Vector)))))
-
-(u/render-sketch-to-canvas setup draw "ch1-canvas")
+    (let [start (Vector. (/ width 2) (/ height 2))
+          v (.random2D Vector)
+          end (.add Vector start (.mult v (rand-int (/ height 2))))
+          ]
+      (.line p
+             (.-x start)
+             (.-y start)
+             (.-x end)
+             (.-y end)))))

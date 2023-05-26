@@ -201,7 +201,7 @@
                    (* (+ 1 y) cell)
                    (* mag n2))))
       (.endShape p)))
-  (swap! perlin-landscape-state update :step #(+ % 0.005))
+  (swap! perlin-landscape-state update :step #(+ % 0.05))
 )
 ;; (:step @perlin-landscape-state)
 

@@ -3,9 +3,9 @@
 
 (defn render-sketch-to-canvas [setup-fn draw-fn id]
   (if (.getElementById js/document id)
-    (p5. (fn [p]
-           (set! (.-setup p) (fn [] (setup-fn p)))
-           (set! (.-draw p) (fn [] (draw-fn p))))))
+    (p5. (fn [s]
+           (set! (.-setup s) (fn [] (setup-fn s)))
+           (set! (.-draw s) (fn [] (draw-fn s))))))
   (println "no id found: " id))
 
 (defn text-on-canvas [p text color]
