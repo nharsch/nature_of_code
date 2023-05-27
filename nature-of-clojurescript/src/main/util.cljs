@@ -24,3 +24,15 @@
   (let [r1 (rand 1)
         r2 (rand 1)]
     (if (< r2 r1) r1 (montecarlo))))
+
+(defn create-div [mount-id div-id]
+  (let [m (.getElementById js/document mount-id)]
+    (if (and m (not (.getElementById js/document div-id)))
+      (let [d (.createElement js/document "div")]
+        (.setAttribute d "id" div-id)
+        (.append m d)))))
+
+
+(def vadd (.-add Vector))
+(def vsub (.-sub Vector))
+(def vmult (.-mult Vector))
