@@ -1,7 +1,8 @@
 (ns ch1
   (:require [util :as u]
             [p5 :refer [Vector]]
-            [quil.core :as q :include-macros true]))
+            [quil.core :as q :include-macros true]
+            [mover :as m]))
 
 (comment
   (.createVector (p5.))
@@ -44,31 +45,27 @@
 (def rv-state (atom {}))
 (defn setup-rv []
   (q/background 0)
-  (swap! rv-state assoc :pos (Vector. (/ width 2) (/ height 2)))
-  (swap! rv-state assoc :vel (Vector. 0 0))
-  (swap! rv-state assoc :acc 0.5))
-
-(u/vsub (Vector. 1 1) (Vector. 1 1))
+  (swap! rv-state assoc :mvrs (for [x (range 10)]
+                                (m/create-mover (Vector. x 0)
+                                                (Vector. 0 0)
+                                                10))))
 
 ; TODO: array of movers
 (defn draw-rv []
   (q/background 0)
   ;; (q/stroke-weight 1)
   (q/stroke 5 0)
-  (let [mpos (if (and (< 0 (q/mouse-x)) (< 0 (q/mouse-y)))
-               (Vector. (q/mouse-x) (q/mouse-y))
-               (Vector.  (/ width 2) (/ height 2)))
-        dv (.setMag (u/vsub mpos (:pos @rv-state)) 0.5)]
-    ;; set acc as vector to mouspos
-    (swap! rv-state assoc :acc (identity dv))
-    ;; add acc to vel
-    (swap! rv-state assoc :vel (identity (u/vadd (:vel @rv-state) (:acc @rv-state))))
-    ;; add vel to pos
-    (swap! rv-state assoc :pos (identity (u/vadd (:pos @rv-state) (:vel @rv-state))))
-    ;; (.limit (:vel @rv-state) 5)
-    (q/ellipse (.-x (:pos @rv-state))
-               (.-y (:pos @rv-state))
-               5 5)))
+  (doseq [m (:mvrs @rv-state)]
+    (q/ellipse (.-x (:loc m)) (.-y (:loc m))
+               10 10))
+  (let [updated-mvrs (map
+                      (fn [m] (m/move-mvr-toward-point m
+                                                       (Vector. (q/mouse-x) (q/mouse-y))
+                                                       0.5))
+                      (:mvrs @rv-state))]
+    (swap! rv-state assoc :mvrs updated-mvrs)
+    ))
+
 
 (u/create-div "ch1-canvas" "random-vec")
 (q/defsketch rv
