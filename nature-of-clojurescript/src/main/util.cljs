@@ -36,3 +36,4 @@
 (def vadd (.-add Vector))
 (def vsub (.-sub Vector))
 (def vmult (.-mult Vector))
+(def vdiv (.-div Vector))

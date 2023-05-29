@@ -33,14 +33,16 @@
   (swap! state assoc :pos
          (u/vadd (:pos @state) (:vel @state))))
 
-;; (u/create-div "ch1-canvas" "ball-moves")
-;; (q/defsketch example                  ;; Define a new sketch named example
-;;   :host "ball-moves"
-;;   :title "ball-moves"    ;; Set the title of the sketch
-;;   :settings #(q/smooth 2)             ;; Turn on anti-aliasing
-;;   :setup setup                        ;; Specify the setup fn
-;;   :draw draw                          ;; Specify the draw fn
-;;   :size [width height])                    ;; You struggle to beat the golden ratio
+(if (.getElementById js/document "ch1-canvas")
+  (do
+    (u/create-div "ch1-canvas" "ball-moves")
+    (q/defsketch example ;; Define a new sketch named example
+      :host "ball-moves"
+      :title "ball-moves"   ;; Set the title of the sketch
+      :settings #(q/smooth 2) ;; Turn on anti-aliasing
+      :setup setup            ;; Specify the setup fn
+      :draw draw              ;; Specify the draw fn
+      :size [width height])))                    ;; You struggle to beat the golden ratio
 
 (def rv-state (atom {}))
 (defn setup-rv []
@@ -66,12 +68,13 @@
     (swap! rv-state assoc :mvrs updated-mvrs)
     ))
 
-
-(u/create-div "ch1-canvas" "random-vec")
-(q/defsketch rv
-  :host "random-vec"
-  :title "random-vec"    ;; Set the title of the sketch
-  :settings #(q/smooth 2)             ;; Turn on anti-aliasing
-  :setup setup-rv                        ;; Specify the setup fn
-  :draw draw-rv
-  :size [width height])
+(if (.getElementById js/document "ch1-canvas")
+  (do
+    (u/create-div "ch1-canvas" "random-vec")
+    (q/defsketch rv
+      :host "random-vec"
+      :title "random-vec"   ;; Set the title of the sketch
+      :settings #(q/smooth 2) ;; Turn on anti-aliasing
+      :setup setup-rv         ;; Specify the setup fn
+      :draw draw-rv
+      :size [width height])))
