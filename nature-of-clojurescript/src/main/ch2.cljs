@@ -12,20 +12,22 @@
   (q/background 0)
   (swap! state assoc :mvr (m/create-mvr
                               (Vector. 200 200)
-                              (Vector. 1 1)
-                              (Vector. 0 -0.5)
+                              (Vector. 0 0)
                               10)))
 (defn draw []
   (q/background 0)
   (q/stroke-weight 1)
   (q/stroke 5 0)
+  (def wind (Vector. -0.5 0))
+  (def gravity (Vector. 0 1))
   (let [m (:mvr @state)]
     (q/ellipse (.-x (:loc m)) (.-y (:loc m))
-               10 10)
-    (swap! state update :mvr #(m/mvr-apply-force % (Vector. -0.1 0)))
+               30 30)
+    (if (q/mouse-pressed?)
+      (swap! state update :mvr #(m/mvr-apply-force % wind)))
+    (swap! state update :mvr #(m/mvr-apply-force % gravity))
     (swap! state update :mvr m/update-mvr)
-    )
-  )
+    (swap! state update :mvr #(m/mvr-edges % 400 400))))
 
 (comment
   @state
