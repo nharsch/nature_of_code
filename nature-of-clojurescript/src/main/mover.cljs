@@ -31,13 +31,14 @@
    :mass mass})
 
 
-
 (defn mvr-apply-force [m f]
   (assoc m :vel (u/vadd (:vel m) (u/vdiv f (:mass m)))))
 
 (defn mvr-edges [m width height]
-  (cond (or (<= (.-x (:loc m)) 0) (>= (.-x (:loc m)) width)) (assoc m :vel (u/vmult (:vel m) (Vector. -1 1)))
-        (or (<= (.-y (:loc m)) 0) (>= (.-y (:loc m)) height)) (assoc m :vel (u/vmult (:vel m) (Vector. 1 -1)))(>= (.-y (:loc m)) height) (assoc m :vel (u/vmult (:vel m) (Vector. 1 -1)))
+  (cond (or (<= (.-x (:loc m)) 0) (>= (.-x (:loc m)) width))
+        (assoc m :vel (u/vmult (:vel m) (Vector. -1 1)))
+        (or (<= (.-y (:loc m)) 0) (>= (.-y (:loc m)) height))
+        (assoc m :vel (u/vmult (:vel m) (Vector. 1 -1)))(>= (.-y (:loc m)) height) (assoc m :vel (u/vmult (:vel m) (Vector. 1 -1)))
         :else m))
 
 (comment
@@ -58,9 +59,7 @@
 
 
 (defn update-mvr [m]
-  ;; (println m)
-  (-> m
-      (assoc :loc (u/vadd (:loc m) (:vel m)))))
+  (assoc m :loc (u/vadd (:loc m) (:vel m))))
 
 (comment
   (mvr-apply-force
