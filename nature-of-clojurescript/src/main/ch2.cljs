@@ -26,15 +26,25 @@
   (doseq [[i m] (map-indexed vector (:mvrs @state))]
     (q/ellipse (.-x (:loc m)) (.-y (:loc m)) (* 2 (:mass m)) (* 2 (:mass m)))
     (let [wind (Vector. -0.5 0)
-          gravity (u/vmult (Vector. 0 0.5) (:mass m))] ;; gragivy is scaled to mass
+          ;; gravity is scaled to mass
+          gravity (u/vmult (Vector. 0 0.5) (:mass m))
+          ;; friction is opposing vel, normalized, mag set to friction coefficient * mass
+          friction (.setMag (.normalize (u/vmult (:vel m) -1))
+                            (* 0.01 (:mass m)))
+          ]
       (swap! state assoc-in [:mvrs i]
              (-> m
                  (#(if (q/mouse-pressed?) (m/mvr-apply-force % wind) %))
+                 (#(if (>= (.-y (:loc %)) 400) (m/mvr-apply-force % friction) %))
                  (m/mvr-apply-force gravity)
                  m/update-mvr
                  (m/mvr-edges 400 400))))))
 
+
 (comment
+  (def v (Vector. 1 1))
+  v
+  (.normalize (u/vmult v -1))
   (map-indexed vector (:mvrs @state))
   (get-in @state [:mvrs 1])
   (m/mvr-apply-force (:mvr @state)
@@ -46,7 +56,7 @@
     (q/defsketch fv
       :host "force-mvr"
       :title "force-mvr"    ;; Set the title of the sketch
-      :settings #(q/smooth 2) ;; Turn on anti-aliasing
+      ;; :settings #(q/smooth 2) ;; Turn on anti-aliasing
       :setup setup
       :draw draw
       :size [400 400])))

@@ -35,10 +35,22 @@
   (assoc m :vel (u/vadd (:vel m) (u/vdiv f (:mass m)))))
 
 (defn mvr-edges [m width height]
-  (cond (or (<= (.-x (:loc m)) 0) (>= (.-x (:loc m)) width))
-        (assoc m :vel (u/vmult (:vel m) (Vector. -1 1)))
-        (or (<= (.-y (:loc m)) 0) (>= (.-y (:loc m)) height))
-        (assoc m :vel (u/vmult (:vel m) (Vector. 1 -1)))(>= (.-y (:loc m)) height) (assoc m :vel (u/vmult (:vel m) (Vector. 1 -1)))
+  (cond (<= (.-x (:loc m)) 0)
+        (-> m
+            (assoc :loc (Vector. 0 (.-y (:loc m))))
+            (assoc :vel (u/vmult (:vel m) (Vector. -1 1))))
+        (>= (.-x (:loc m)) width)
+        (-> m
+            (assoc :loc (Vector. width (.-y (:loc m))))
+            (assoc :vel (u/vmult (:vel m) (Vector. -1 1))))
+        (<= (.-y (:loc m)) 0)
+        (-> m
+            (assoc :loc (Vector. (.-x (:loc m)) 0))
+            (assoc :vel (u/vmult (:vel m) (Vector. 1 -1))))
+        (>= (.-y (:loc m)) height)
+        (-> m
+            (assoc :loc (Vector. (.-x (:loc m)) height))
+            (assoc :vel (u/vmult (:vel m) (Vector. 1 -1))))
         :else m))
 
 (comment
