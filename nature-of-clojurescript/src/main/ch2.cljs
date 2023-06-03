@@ -30,8 +30,7 @@
           gravity (u/vmult (Vector. 0 0.5) (:mass m))
           ;; friction is opposing vel, normalized, mag set to friction coefficient * mass
           friction (.setMag (.normalize (u/vmult (:vel m) -1))
-                            (* 0.01 (:mass m)))
-          ]
+                            (* 0.01 (:mass m)))]
       (swap! state assoc-in [:mvrs i]
              (-> m
                  (#(if (q/mouse-pressed?) (m/mvr-apply-force % wind) %))
@@ -39,7 +38,6 @@
                  (m/mvr-apply-force gravity)
                  m/update-mvr
                  (m/mvr-edges 400 400))))))
-
 
 (comment
   (def v (Vector. 1 1))
@@ -59,4 +57,63 @@
       ;; :settings #(q/smooth 2) ;; Turn on anti-aliasing
       :setup setup
       :draw draw
+      :size [400 400])))
+
+(def drag-state (atom  {}))
+
+(defn setup-drag []
+  (q/background 0)
+  (swap! drag-state assoc :mvrs [(m/create-mvr
+                                  (Vector. 100 100)
+                                  (Vector. 0 0)
+                                  10)
+                                 (m/create-mvr
+                                  (Vector. 200 100)
+                                  (Vector. 0 0)
+                                  20)
+                                 (m/create-mvr
+                                  (Vector. 350 100)
+                                  (Vector. 0 0)
+                                  20)
+                                 (m/create-mvr
+                                  (Vector. 300 100)
+                                  (Vector. 0 0)
+                                  20)]))
+
+
+(defn draw-drag []
+  (q/background 0)
+  (q/fill 255 125)
+  (q/no-stroke)
+  (q/rect 0 200 400 200)
+  (q/stroke-weight 1)
+  (q/stroke 5 0)
+  (doseq [[i m] (map-indexed vector (:mvrs @drag-state))]
+    (q/ellipse (.-x (:loc m)) (.-y (:loc m)) (* 2 (:mass m)) (* 2 (:mass m)))
+    (let [wind (Vector. -0.5 0)
+          ;; gravity is scaled to mass
+          gravity (u/vmult (Vector. 0 0.5) (:mass m))
+          ;; friction is opposing vel, normalized, mag set to friction coefficient * mass
+          drag (-> (.copy (:vel m))
+                   .normalize
+                   (u/vmult -1) ; reverse
+                   ;; (u/vmult (:vel m)) ; square
+                   (.setMag (* (.magSq (:vel m)) ; speed
+                               1)) ; const
+                   )]
+      (swap! drag-state assoc-in [:mvrs i]
+             (-> m
+                 (#(if (>= (.-y (:loc m)) 200) (m/mvr-apply-force % drag) %))
+                 (m/mvr-apply-force gravity)
+                 m/update-mvr
+                 (m/mvr-edges 400 400))))))
+
+(if (.getElementById js/document canvas-id)
+  (do
+    (u/create-div canvas-id "drag-mvr")
+    (q/defsketch fv
+      :host "drag-mvr"
+      :title "drag-mvr"
+      :setup setup-drag
+      :draw draw-drag
       :size [400 400])))
