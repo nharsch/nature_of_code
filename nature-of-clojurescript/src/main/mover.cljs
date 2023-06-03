@@ -69,6 +69,24 @@
   (u/vmult (Vector. 0 1) (Vector. 0 -1))
   )
 
+(defn calc-gravity-between-movers [m1 m2]
+  ;; TO BE applied to m1
+  (let [force (u/vsub (:loc m2) (:loc m1))
+        dist-sqr (.magSq force)
+        G 0.001
+        strength (* G (:mass m1) (:mass m2))]
+    (.setMag force strength)
+    force))
+
+(comment
+  (calc-gravity-between-movers (create-mvr (Vector. 100 200)
+                                           (Vector. 0 0)
+                                           10)
+                               (create-mvr (Vector. 100 100)
+                                           (Vector. 0 0)
+                                           1))
+  )
+
 
 (defn update-mvr [m]
   (assoc m :loc (u/vadd (:loc m) (:vel m))))
@@ -88,3 +106,11 @@
    :acc
    (fn [c])(u/vadd % (u/vdiv f (:mass m))))
   )
+
+(defn get-gforces-for-m [m mvrs]
+  (let [other-vectors (filter #(not (.equals (:loc m) (:loc %))) mvrs)
+        gforces (map #(calc-gravity-between-movers m %) other-vectors)]
+    gforces))
+
+(defn apply-forces-to-mvr [m forces]
+  (reduce (fn [m f] (mvr-apply-force m f)) m forces))

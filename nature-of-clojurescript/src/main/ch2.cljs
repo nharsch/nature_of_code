@@ -48,16 +48,16 @@
   (m/mvr-apply-force (:mvr @state)
                      (Vector. 1 1)))
 
-(if (.getElementById js/document canvas-id)
-  (do
-    (u/create-div canvas-id "force-mvr")
-    (q/defsketch fv
-      :host "force-mvr"
-      :title "force-mvr"    ;; Set the title of the sketch
-      ;; :settings #(q/smooth 2) ;; Turn on anti-aliasing
-      :setup setup
-      :draw draw
-      :size [400 400])))
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "force-mvr")
+;;     (q/defsketch fv
+;;       :host "force-mvr"
+;;       :title "force-mvr"    ;; Set the title of the sketch
+;;       ;; :settings #(q/smooth 2) ;; Turn on anti-aliasing
+;;       :setup setup
+;;       :draw draw
+;;       :size [400 400])))
 
 (def drag-state (atom  {}))
 
@@ -79,7 +79,6 @@
                                   (Vector. 300 100)
                                   (Vector. 0 0)
                                   20)]))
-
 
 (defn draw-drag []
   (q/background 0)
@@ -108,12 +107,50 @@
                  m/update-mvr
                  (m/mvr-edges 400 400))))))
 
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "drag-mvr")
+;;     (q/defsketch fv
+;;       :host "drag-mvr"
+;;       :title "drag-mvr"
+;;       :setup setup-drag
+;;       :draw draw-drag
+;;       :size [400 400])))
+
+(def grav-state (atom  {}))
+
+(defn setup-grav []
+  (q/background 0)
+  ;; (q/frame-rate 10)
+  (swap! grav-state assoc :mvrs [
+                                 (m/create-mvr (Vector. 200 200) (Vector. 0 0) 100)
+                                 (m/create-mvr (Vector. 200 10) (Vector. 0 0) 10)
+                                 (m/create-mvr (Vector. 200 30) (Vector. 0 0) 1)
+                                 ]))
+
+
+
+(defn draw-grav []
+  (q/background 0)
+  (q/stroke-weight 2)
+  (q/stroke 255)
+  (q/fill 51)
+  (doseq [[i m] (map-indexed vector (:mvrs @grav-state))]
+    (q/ellipse (.-x (:loc m)) (.-y (:loc m)) (* 2 (:mass m)) (* 2 (:mass m)))
+    (let [gforces (m/get-gforces-for-m m (:mvrs @grav-state))]
+      (swap! grav-state assoc-in [:mvrs i]
+             (-> m
+                 (m/apply-forces-to-mvr gforces)
+                 m/update-mvr
+                 ;; (m/mvr-edges 400 400)
+                 )))))
+
 (if (.getElementById js/document canvas-id)
   (do
-    (u/create-div canvas-id "drag-mvr")
+    (u/create-div canvas-id "grav-mvr")
     (q/defsketch fv
-      :host "drag-mvr"
-      :title "drag-mvr"
-      :setup setup-drag
-      :draw draw-drag
+      :host "grav-mvr"
+      :title "grav-mvr"
+      :setup setup-grav
+      :draw draw-grav
       :size [400 400])))
