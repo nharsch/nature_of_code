@@ -2,7 +2,9 @@
   (:require
    [intro]
    [ch1]
-   [ch2]))
+   [ch2]
+   [ch3]
+   ))
 
 
 (defn init []

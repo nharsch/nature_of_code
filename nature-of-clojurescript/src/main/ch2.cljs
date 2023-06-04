@@ -132,9 +132,7 @@
 
 (defn draw-grav []
   (q/background 0)
-  (q/stroke-weight 2)
   (q/stroke 255)
-  (q/fill 51)
   (doseq [[i m] (map-indexed vector (:mvrs @grav-state))]
     (q/ellipse (.-x (:loc m)) (.-y (:loc m)) (* 2 (:mass m)) (* 2 (:mass m)))
     (let [gforces (m/get-gforces-for-m m (:mvrs @grav-state))]

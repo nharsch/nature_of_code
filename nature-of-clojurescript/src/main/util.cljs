@@ -37,3 +37,4 @@
 (def vsub (.-sub Vector))
 (def vmult (.-mult Vector))
 (def vdiv (.-div Vector))
+(def from-angle (.-fromAngle Vector))
