@@ -35,16 +35,16 @@
   (swap! state #(+ 1 %)))
 
 
-(if (.getElementById js/document canvas-id)
-  (do
-    (u/create-div canvas-id "force-mvr")
-    (q/defsketch fv
-      :host "force-mvr"
-      :title "force-mvr"    ;; Set the title of the sketch
-      :settings #(q/smooth 2) ;; Turn on anti-aliasing
-      :setup setup
-      :draw draw
-      :size [width height])))
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "force-mvr")
+;;     (q/defsketch fv
+;;       :host "force-mvr"
+;;       :title "force-mvr"    ;; Set the title of the sketch
+;;       :settings #(q/smooth 2) ;; Turn on anti-aliasing
+;;       :setup setup
+;;       :draw draw
+;;       :size [width height])))
 
 
 (def grav-state (atom  {}))
@@ -84,12 +84,49 @@
                  ;; (m/mvr-edges 400 400)
                  )))))
 
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "grav-mvr")
+;;     (q/defsketch fv
+;;       :host "grav-mvr"
+;;       :title "grav-mvr"
+;;       :setup setup-grav
+;;       :draw draw-grav
+;;       :size [400 400])))
+
+
+
+(def tf-angle (atom  0))
+(def tf-rad (atom 120))
+
+(defn setup-trig-funs []
+  (q/background 0))
+
+
+(defn draw-trig-funs []
+  (q/translate 200 200)
+  (let [r 130
+        x (* @tf-rad (Math/cos @tf-angle))
+        y (* @tf-rad (Math/sin @tf-angle))]
+    ;; (q/background 0)
+    (q/stroke-weight 2)
+    (q/stroke 255)
+    (q/no-fill)
+    ;; (q/ellipse 0 0 (* @tf-rad 2) (* @tf-rad 2))
+    (q/stroke-weight 12)
+    (q/stroke 252 238 33)
+    (q/point x y)
+    (swap! tf-angle #(+ % 0.02))
+    (swap! tf-rad #(- % 0.07))
+    )
+  )
+
 (if (.getElementById js/document canvas-id)
   (do
-    (u/create-div canvas-id "grav-mvr")
+    (u/create-div canvas-id "trig-funs-mvr")
     (q/defsketch fv
-      :host "grav-mvr"
-      :title "grav-mvr"
-      :setup setup-grav
-      :draw draw-grav
+      :host "trig-funs-mvr"
+      :title "trig-funs-mvr"
+      :setup setup-trig-funs
+      :draw draw-trig-funs
       :size [400 400])))
