@@ -121,12 +121,45 @@
     )
   )
 
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "trig-funs-mvr")
+;;     (q/defsketch fv
+;;       :host "trig-funs-mvr"
+;;       :title "trig-funs-mvr"
+;;       :setup setup-trig-funs
+;;       :draw draw-trig-funs
+;;       :size [400 400])))
+
+(def harm-angle (atom  0))
+(def harm-rad (atom 120))
+
+(defn setup-harm-funs []
+  (q/background 255)
+  )
+
+(comment (Math/cos 1))
+
+(defn draw-harm-funs []
+  (let [period 60
+        amplitude 100
+        x (* amplitude
+             (Math/cos (/ (* (* 2 Math/PI) (q/frame-count))
+                          period)))]
+    ;; (println x)
+    (q/background 255)
+    (q/stroke 0)
+    (q/fill 125)
+    (q/translate (/ width 2) (/ height 2))
+    (q/line 0 0 x 0)
+    (q/ellipse x 0 20 20)))
+
 (if (.getElementById js/document canvas-id)
   (do
-    (u/create-div canvas-id "trig-funs-mvr")
+    (u/create-div canvas-id "harm-funs-mvr")
     (q/defsketch fv
-      :host "trig-funs-mvr"
-      :title "trig-funs-mvr"
-      :setup setup-trig-funs
-      :draw draw-trig-funs
-      :size [400 400])))
+      :host "harm-funs-mvr"
+      :title "harm-funs-mvr"
+      :setup setup-harm-funs
+      :draw draw-harm-funs
+      :size [width height])))
