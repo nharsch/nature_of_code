@@ -131,8 +131,7 @@
 ;;       :draw draw-trig-funs
 ;;       :size [400 400])))
 
-(def harm-angle (atom  0))
-(def harm-rad (atom 120))
+(def start-angle (atom  0))
 
 (defn setup-harm-funs []
   (q/background 255)
@@ -141,18 +140,42 @@
 (comment (Math/cos 1))
 
 (defn draw-harm-funs []
-  (let [period 60
+  (let [period 30
         amplitude 100
-        x (* amplitude
+        s (* amplitude
+             (Math/sin (/ (* (* 2 Math/PI) (q/frame-count))
+                          period)))
+        c (* amplitude
              (Math/cos (/ (* (* 2 Math/PI) (q/frame-count))
+                          period)))
+        t (* amplitude
+             (Math/tan (/ (* (* 2 Math/PI) (q/frame-count))
                           period)))]
     ;; (println x)
     (q/background 255)
-    (q/stroke 0)
-    (q/fill 125)
-    (q/translate (/ width 2) (/ height 2))
-    (q/line 0 0 x 0)
-    (q/ellipse x 0 20 20)))
+    ;; (q/stroke 1)
+    ;; (q/stroke-weight 1)
+    (q/fill 200)
+    (q/translate 0 (/ height 2))
+
+    (doseq [x (range (/ width 10))] (q/ellipse (* 10 x)
+                                        (* amplitude (Math/sin (/ (+ @start-angle (* 10 x)) period)))
+                                        10
+                                        10))
+
+    ;; (q/begin-shape)
+    ;; (doseq [x (range width)] (q/vertex x (* amplitude (Math/cos (/ (+ @start-angle x) period)))))
+    ;; (q/end-shape)
+
+    ;; (q/begin-shape)
+    ;; (doseq [x (range width)] (q/vertex x (* amplitude (Math/tan (/ (+ @start-angle x) period)))))
+    ;; (q/end-shape)
+
+    (swap! start-angle inc)
+    ;; (q/line 0 10 c 10)
+    ;; (q/line 0 20 t 20)
+    )
+)
 
 (if (.getElementById js/document canvas-id)
   (do
