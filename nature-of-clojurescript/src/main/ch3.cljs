@@ -186,3 +186,53 @@
       :setup setup-harm-funs
       :draw draw-harm-funs
       :size [width height])))
+
+(def af-phase (atom 0))
+(defn setup-additive-funs []
+  (q/background 255))
+
+
+(defn wave-fn [amplitude period]
+  (fn [x phase]
+    (* amplitude (Math/sin (+ phase
+                              (/ (* (* 2 Math/PI) x) period))))))
+
+(def waves (for [x (range 4)] (wave-fn (+ 10 (rand 70))
+                                       (+ 10 (rand 20)))))
+
+
+(defn draw-additive-funs []
+  ;; (println x)
+    (q/background 255)
+    ;; (q/stroke 1)
+    ;; (q/stroke-weight 1)
+    (q/fill 200)
+    (q/translate 0 (/ height 2))
+
+  (doseq [x (range (/ width 10))]
+    (let [y (reduce + (map  #(% x @af-phase) waves))]
+      (q/ellipse (* 10 x) y 10 10)))
+
+    ;; (q/begin-shape)
+    ;; (doseq [x (range width)] (q/vertex x (* amplitude (Math/cos (/ (+ @start-angle x) period)))))
+    ;; (q/end-shape)
+
+    ;; (q/begin-shape)
+    ;; (doseq [x (range width)] (q/vertex x (* amplitude (Math/tan (/ (+ @start-angle x) period)))))
+    ;; (q/end-shape)
+
+    (swap! af-phase #(+ % 0.1))
+    ;; (q/line 0 10 c 10)
+    ;; (q/line 0 20 t 20)
+
+)
+
+(if (.getElementById js/document canvas-id)
+  (do
+    (u/create-div canvas-id "additive-funs-mvr")
+    (q/defsketch fv
+      :host "additive-funs-mvr"
+      :title "additive-funs-mvr"
+      :setup setup-additive-funs
+      :draw draw-additive-funs
+      :size [width height])))
