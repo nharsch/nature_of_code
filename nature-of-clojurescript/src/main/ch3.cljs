@@ -177,15 +177,15 @@
     )
 )
 
-(if (.getElementById js/document canvas-id)
-  (do
-    (u/create-div canvas-id "harm-funs-mvr")
-    (q/defsketch fv
-      :host "harm-funs-mvr"
-      :title "harm-funs-mvr"
-      :setup setup-harm-funs
-      :draw draw-harm-funs
-      :size [width height])))
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "harm-funs-mvr")
+;;     (q/defsketch fv
+;;       :host "harm-funs-mvr"
+;;       :title "harm-funs-mvr"
+;;       :setup setup-harm-funs
+;;       :draw draw-harm-funs
+;;       :size [width height])))
 
 (def af-phase (atom 0))
 (defn setup-additive-funs []
@@ -227,12 +227,50 @@
 
 )
 
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "additive-funs-mvr")
+;;     (q/defsketch fv
+;;       :host "additive-funs-mvr"
+;;       :title "additive-funs-mvr"
+;;       :setup setup-additive-funs
+;;       :draw draw-additive-funs
+;;       :size [width height])))
+
+(defonce sf-state (atom { :y 125 :k 0.01 :velocity 0 }))
+
+(defn setup-spring-forces []
+  (q/background 255))
+
+(defn draw-spring-forces []
+  ;; (println x)
+  (let [
+        rest-length 200
+        x (- (:y @sf-state) rest-length)
+        force (* -1 (* (:k @sf-state) x))
+        ]
+    (q/background 255)
+    (q/fill 200)
+    (q/fill 45 197 244)
+    (q/ellipse 200 (:y @sf-state) 64 64)
+    (swap! sf-state update :velocity + force)
+    (swap! sf-state update :y + (:velocity @sf-state))
+    )
+)
+
+(comment
+  (swap! sf-state assoc :velocity 0)
+  (swap! sf-state update :velocity + 1)
+  (:velocity @sf-state)
+  (:y @sf-state)
+  )
+
 (if (.getElementById js/document canvas-id)
   (do
-    (u/create-div canvas-id "additive-funs-mvr")
+    (u/create-div canvas-id "spring-forces-mvr")
     (q/defsketch fv
-      :host "additive-funs-mvr"
-      :title "additive-funs-mvr"
-      :setup setup-additive-funs
-      :draw draw-additive-funs
+      :host "spring-forces-mvr"
+      :title "spring-forces-mvr"
+      :setup setup-spring-forces
+      :draw draw-spring-forces
       :size [width height])))
