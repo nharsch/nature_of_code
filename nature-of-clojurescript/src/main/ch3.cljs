@@ -237,30 +237,57 @@
 ;;       :draw draw-additive-funs
 ;;       :size [width height])))
 
-(defonce sf-state (atom { :y 125 :k 0.01 :velocity 0 }))
+(def sf-state (atom {:bob (Vector. 205 400)
+                     :anchor (Vector. 200 0)
+                     :rest-length 150
+                     :y 125
+                     :k 0.008
+                     :velocity (Vector. 0 0)
+                     :gravity (Vector. 0 0.1)
+                     }))
 
-(defn setup-spring-forces []
-  (q/background 255))
+(defn setup-spring-forces [])
 
 (defn draw-spring-forces []
   ;; (println x)
-  (let [
-        rest-length 200
-        x (- (:y @sf-state) rest-length)
-        force (* -1 (* (:k @sf-state) x))
-        ]
-    (q/background 255)
-    (q/fill 200)
-    (q/fill 45 197 244)
-    (q/ellipse 200 (:y @sf-state) 64 64)
-    (swap! sf-state update :velocity + force)
-    (swap! sf-state update :y + (:velocity @sf-state))
+  (q/background 112 50 126)
+  (q/no-stroke)
+  (q/fill 45 197 244)
+  (q/stroke 255)
+  (q/line (.-x (:anchor @sf-state))
+          (.-y (:anchor @sf-state))
+          (.-x (:bob @sf-state))
+          (.-y (:bob @sf-state)))
+  (q/ellipse (.-x (:bob @sf-state))
+               (.-y (:bob @sf-state))
+               64 64)
+  (q/ellipse (.-x (:anchor @sf-state))
+               (.-y (:anchor @sf-state))
+               32 32)
+
+
+    (let [f (u/vsub (:bob @sf-state)
+                        (:anchor @sf-state))
+          x (- (.mag f) (:rest-length @sf-state))
+          force (-> f
+                   .normalize
+                   (.mult (:k @sf-state))
+                   (.mult -1)
+                   (.mult x)
+                   )]
+      (swap! sf-state update :velocity u/vadd force)
+      (swap! sf-state update :bob u/vadd (:velocity @sf-state))
+      (swap! sf-state update :velocity u/vmult 0.99)
+      (swap! sf-state update :velocity u/vadd (:gravity @sf-state)))
+  (if (q/mouse-pressed?)
+    (do
+      (swap! sf-state assoc :bob (Vector. (q/mouse-x) (q/mouse-y)))
+      (swap! sf-state assoc :velocity (Vector. 0 0)))
     )
-)
+  )
 
 (comment
-  (swap! sf-state assoc :velocity 0)
-  (swap! sf-state update :velocity + 1)
+  @sf-state
   (:velocity @sf-state)
   (:y @sf-state)
   )
