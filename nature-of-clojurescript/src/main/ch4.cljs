@@ -4,9 +4,7 @@
             [quil.core :as q :include-macros true]
             [mover :as m]
             [cljs.math :as math]
-            ; TODO: why do I need to explicitly require a protocol method?
-            [particle :refer [Particle, new-random-particle, update-pos]]))
-
+            [particle :as p]))
 
 (def canvas-id "ch4-canvas")
 (def width 400)
@@ -14,24 +12,30 @@
 
 
 (def state (atom { :particles [] }))
-
 (comment
-  (new-random-particle)
+  (p/new-random-particle)
   )
 
 (defn setup-particles []
-  (reset! state {:particles (take 10 (repeatedly #(new-random-particle width height)))}))
+  ;; (q/frame-rate 1)
+  (reset! state {:particles (take 10 (repeatedly
+                                      #(p/new-random-particle (Vector. (/ width 2) (/ height 2))
+                                                            width
+                                                            height)))}))
 
 (defn draw-particles []
   (q/background 112 50 126)
   (q/no-stroke)
   (q/fill 45 197 244)
   (doseq [p (:particles @state)]
-    (print p)
     (q/ellipse (.-x (:pos p))
                (.-y (:pos p))
                10 10))
-  (swap! state assoc :particles (map update-pos (:particles @state))))
+  (swap! state assoc :particles (->> (:particles @state)
+                                     (map #(p/apply-force % (Vector. 0 1)))
+                                     (map p/update-pos)
+                                     (map p/edges)
+                                     )))
 
 (comment
   (update-pos (first (:particles @state)))

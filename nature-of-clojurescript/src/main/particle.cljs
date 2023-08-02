@@ -29,7 +29,9 @@
 
 (defprotocol ParticleProto
   (edges [this] "edge detection, updates velocity")
-  (update-pos [this] "updates position based on velocity"))
+  (apply-force [this force-vector] "applies a force")
+  (update-pos [this] "updates position based on velocity")
+  )
 
 ; TODO: how spec key types
 (defrecord Particle [pos vel width height r lifetime]
@@ -37,16 +39,15 @@
   (edges [this]
     (-> this
         (check-x-edge width)
-        (check-y-edge height)
-        map->Particle))
+        (check-y-edge height)))
+  (apply-force [this fv]
+    (assoc this :vel (u/vadd (:vel this) fv))
+    )
   (update-pos [this]
-    ; check edges
-    (let [p (edges this)]
-      ; and update-pos position with current velocity
-      (assoc p :pos (u/vadd (:pos p) (:vel p))))))
+    (assoc this :pos (u/vadd (:pos this) (:vel this)))))
 
-(defn new-random-particle [width height r lifetime]
-  (->Particle (Vector. (rand-int width) (rand-int height))
+(defn new-random-particle [pos width height r lifetime]
+  (->Particle pos
               (Vector. (- (rand-int 10) 5)
                        (- (rand-int 10) 5))
               width
@@ -56,14 +57,12 @@
 
 
 (comment
-  (new-random-particle 100 100)
-  (def testpart (->Particle (Vector. 110 110)
-                            (Vector. 10 10)
-                            100
-                            100
-                            1
-                            1))
+  (update-pos (new-random-particle 100 100))
+
   (update-pos testpart)
+
+  (apply-force (->Particle (Vector. 10 10) (Vector. 0 0) 100 100)
+               (Vector. -1 -1))
 
   (defn apply-n-times [f n data]
     (if (zero? n)
