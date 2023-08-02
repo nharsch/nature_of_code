@@ -50,14 +50,15 @@
           )
       )))
 
-(defn new-random-particle [pos width height]
+(defn new-random-particle [pos width height lifetime r decay]
   (->Particle pos
               (Vector. (- (rand-int 10) 5)
                        (- (rand-int 10) 5))
               width
               height
-              255
-              10))
+              lifetime
+              r
+              decay))
 
 
 (comment
