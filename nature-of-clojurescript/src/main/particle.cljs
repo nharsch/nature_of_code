@@ -30,36 +30,40 @@
 (defprotocol ParticleProto
   (edges [this] "edge detection, updates velocity")
   (apply-force [this force-vector] "applies a force")
-  (update-pos [this] "updates position based on velocity")
-  )
+  (update [this] "updates position based on velocity"))
 
 ; TODO: how spec key types
-(defrecord Particle [pos vel width height r lifetime]
+(defrecord Particle [pos vel width height lifetime r decay]
   ParticleProto
   (edges [this]
     (-> this
         (check-x-edge width)
         (check-y-edge height)))
   (apply-force [this fv]
-    (assoc this :vel (u/vadd (:vel this) fv))
-    )
-  (update-pos [this]
-    (assoc this :pos (u/vadd (:pos this) (:vel this)))))
+    (assoc this :vel (u/vadd (:vel this) fv)))
+  (update [this]
+    (let [new-pos (u/vadd (:pos this) (:vel this))
+          new-life (if (> (:lifetime this) 0) (- (:lifetime this) (or decay 0.5)) 0)]
+      (-> this
+          (assoc :pos new-pos)
+          (assoc :lifetime new-life)
+          )
+      )))
 
-(defn new-random-particle [pos width height r lifetime]
+(defn new-random-particle [pos width height]
   (->Particle pos
               (Vector. (- (rand-int 10) 5)
                        (- (rand-int 10) 5))
               width
               height
-              r
-              lifetime))
+              255
+              10))
 
 
 (comment
-  (update-pos (new-random-particle 100 100))
 
-  (update-pos testpart)
+  (update (new-random-particle (Vector. 0 0) 100 100))
+
 
   (apply-force (->Particle (Vector. 10 10) (Vector. 0 0) 100 100)
                (Vector. -1 -1))
@@ -70,6 +74,6 @@
       (recur f (dec n) (f data))))
 
 
-  (apply-n-times update-pos 11 testpart)
+  (apply-n-times update-p 11 testpart)
 
   )

@@ -17,30 +17,34 @@
   )
 
 (defn setup-particles []
-  ;; (q/frame-rate 1)
+  ;; (q/frame-rate 30)
   (reset! state {:particles (take 10 (repeatedly
                                       #(p/new-random-particle (Vector. (/ width 2) (/ height 2))
                                                             width
                                                             height)))}))
+
+(defn cleanup-particles [parts]
+  (filter #(> (:lifetime %) 0) parts)
+  )
 
 (defn draw-particles []
   (q/background 112 50 126)
   (q/no-stroke)
   (q/fill 45 197 244)
   (doseq [p (:particles @state)]
+    (q/stroke 0 (:lifetime p))
+    (q/fill 175 (:lifetime p))
     (q/ellipse (.-x (:pos p))
                (.-y (:pos p))
-               10 10))
+               (:r p)
+               (:r p)))
   (swap! state assoc :particles (->> (:particles @state)
                                      (map #(p/apply-force % (Vector. 0 1)))
-                                     (map p/update-pos)
+                                     (map p/update)
                                      (map p/edges)
+                                     cleanup-particles
                                      )))
 
-(comment
-  (update-pos (first (:particles @state)))
-  (map update-pos (:particles @state))
-  )
 
 
 (if (.getElementById js/document canvas-id)
