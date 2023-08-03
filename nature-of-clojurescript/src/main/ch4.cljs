@@ -1,10 +1,7 @@
 (ns ch4
   (:require [util :as u]
             ; TODO: build a custom vecor class that will be data
-            [p5 :refer [Vector]]
             [quil.core :as q :include-macros true]
-            [mover :as m]
-            [cljs.math :as math]
             [particle :as p]))
 
 (def canvas-id "ch4-canvas")
@@ -36,13 +33,6 @@
   ;; (q/frame-rate 30)
   (reset! state {:emitter-locs (set [origv])
                  :particles []}))
-
-(comment
-  ;; (set [(Vector. 0 0) (Vector. 0 0)])
-  (map - [0 1] [0 1] [0 1])
-  (map * [0 2] [0 2])
-  )
-
 
 
 (defn draw-particles []

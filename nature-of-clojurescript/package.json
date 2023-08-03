@@ -6,6 +6,7 @@
     "shadow-cljs": "2.23.3"
   },
   "dependencies": {
+    "matter-js": "^0.19.0",
     "p5": "^1.6.0"
   }
 }
