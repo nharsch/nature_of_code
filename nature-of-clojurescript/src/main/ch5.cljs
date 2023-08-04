@@ -3,6 +3,7 @@
             [quil.core :as q :include-macros true]
             [util :as u]
             ["matter-js" :as m]
+            [physics :as p]
             ))
 
 (def canvas-id "ch5-canvas")
@@ -13,15 +14,16 @@
 (def boxes)
 (def world)
 (def ground)
+(def state)
 
 
-(def state (atom {}))
 
 (defn setup []
   (set! engine (.create m/Engine))
   (set! world (.-world engine))
-  (set! ground (.rectangle m/Bodies 0 300 width 100 #js {"isStatic" true}))
-  (.add m/Composite world ground)
+  (set! ground (p/boundary 200 height (- width  50) 100))
+  (set! state (atom {:boxes []}))
+  (.add m/Composite world (:body  ground))
   )
 
 
@@ -29,11 +31,27 @@
 (defn draw []
   (q/background 51)
   (q/no-stroke)
+  ;; (q/frame-rate 10)
   (.update m/Engine engine)
+
   ;; TODO: draw boxes
   ;; draw gound
-  (println (.-position ground))
-)
+  (p/render ground)
+
+  (doseq [b (:boxes @state)]
+    (p/render b))
+
+  (if (q/mouse-pressed?)
+    (let [box (p/box (q/mouse-x) (q/mouse-y) 20 20)]
+      (.add m/Composite world (:body box))
+      (swap! state update :boxes conj box))
+    )
+
+  )
+
+(comment
+  (.-position (:body (first (:boxes @state))))
+  )
 
 
 
