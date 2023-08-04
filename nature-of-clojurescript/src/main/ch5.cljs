@@ -17,6 +17,9 @@
 (def state)
 
 
+(defn cleanup-cirlces [circles]
+  (filter #(< (.. (:body %) -position -y) height) circles))
+
 
 (defn setup []
   (set! engine (.create m/Engine))
@@ -31,11 +34,7 @@
 (defn draw []
   (q/background 51)
   (q/no-stroke)
-  ;; (q/frame-rate 10)
   (.update m/Engine engine)
-
-  ;; TODO: draw circles
-  ;; draw gound
   (p/render ground)
 
   (doseq [b (:circles @state)]
@@ -44,13 +43,16 @@
   (if (q/mouse-pressed?)
     (let [circle (p/circle (q/mouse-x) (q/mouse-y) 10)]
       (.add m/Composite world (:body circle))
-      (swap! state update :circles conj circle))
-    )
+      (swap! state update :circles conj circle)))
 
+  (swap! state update :circles cleanup-cirlces)
   )
+
+
 
 (comment
   (.-position (:body (first (:circles @state))))
+  (.. (:body (first (:circles @state))) -position -x)
   )
 
 
