@@ -11,7 +11,7 @@
 (def height 400)
 
 (def engine)
-(def boxes)
+(def circles)
 (def world)
 (def ground)
 (def state)
@@ -21,8 +21,8 @@
 (defn setup []
   (set! engine (.create m/Engine))
   (set! world (.-world engine))
-  (set! ground (p/boundary 200 height (- width  50) 100))
-  (set! state (atom {:boxes []}))
+  (set! ground (p/boundary 200 200 (- width  50) 20 -0.3))
+  (set! state (atom {:circles []}))
   (.add m/Composite world (:body  ground))
   )
 
@@ -34,23 +34,23 @@
   ;; (q/frame-rate 10)
   (.update m/Engine engine)
 
-  ;; TODO: draw boxes
+  ;; TODO: draw circles
   ;; draw gound
   (p/render ground)
 
-  (doseq [b (:boxes @state)]
+  (doseq [b (:circles @state)]
     (p/render b))
 
   (if (q/mouse-pressed?)
-    (let [box (p/box (q/mouse-x) (q/mouse-y) 20 20)]
-      (.add m/Composite world (:body box))
-      (swap! state update :boxes conj box))
+    (let [circle (p/circle (q/mouse-x) (q/mouse-y) 10)]
+      (.add m/Composite world (:body circle))
+      (swap! state update :circles conj circle))
     )
 
   )
 
 (comment
-  (.-position (:body (first (:boxes @state))))
+  (.-position (:body (first (:circles @state))))
   )
 
 
