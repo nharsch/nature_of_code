@@ -63,10 +63,11 @@
               (.rectangle m/Bodies x y w h #js {"friction" 0.3
                                                 "restitution" 0.6})))
 
-(defn circle [x y r]
+(defn circle [x y r isStatic]
   (->CircleThing x y r
               (.circle m/Bodies x y r #js {"friction" 0.01
-                                           "restitution" 0.6})))
+                                           "restitution" 0.6
+                                           "isStatic" (or isStatic false)})))
 
 (comment
   (boundary 100 100 10 10)
