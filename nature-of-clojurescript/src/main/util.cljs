@@ -38,3 +38,15 @@
 (def vmult (.-mult Vector))
 (def vdiv (.-div Vector))
 (def from-angle (.-fromAngle Vector))
+
+; clojure vector support
+(defn vmag [v]
+  (Math/sqrt (reduce + (map #(* % %) v))))
+
+(defn scale-vector [v scale-factor]
+  (map (partial * scale-factor) v))
+
+(defn set-magnitude [v new-magnitude]
+  (let [current-magnitude (vmag v)
+        scale-factor (/ new-magnitude current-magnitude)]
+    (scale-vector v scale-factor)))
