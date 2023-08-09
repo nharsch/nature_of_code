@@ -10,8 +10,7 @@
 (def cons-len 20)
 (def chain-len 5)
 
-; stateful!
-(def state (atom nil))
+(def seek-state (atom nil))
 
 (defrecord Vehicle [pos vel max-force max-speed r])
 
@@ -23,7 +22,7 @@
         steerv (u/vlimit (map - desiredv (:vel v)) (:max-force v))
         ; apply force
         new-vel (map + (:vel v) steerv)
-        new-pos (map + (:pos v) new-vel)
+        new-pos (u/edges (map + (:pos v) new-vel) height width)
         ]
     (assoc v :vel new-vel :pos new-pos)))
 
@@ -35,16 +34,17 @@
         steerv (u/vlimit (map - desiredv (:vel v)) (:max-force v))
         ; apply force
         new-vel (map + (:vel v) steerv)
-        new-pos (map + (:pos v) new-vel)
+        new-pos (u/edges (map + (:pos v) new-vel) width height)
         ]
     (assoc v :vel new-vel :pos new-pos)))
+
 
 (comment
   (seek (->Vehicle [100 100] [0 0] 10 10) [1 1])
   )
 
 (defn setup []
-  (reset! state {:driver (->Vehicle [10 10]
+  (reset! seek-state {:driver (->Vehicle [10 10]
                                     [0 0]
                                     0.2
                                     4
@@ -57,7 +57,7 @@
   ;; (q/frame-rate 1)
 
   ;; draw vehicle
-  (let [driver (:driver @state)
+  (let [driver (:driver @seek-state)
         [x y] (:pos driver)
         r (:r driver)]
     (q/stroke 255)
@@ -72,14 +72,13 @@
     (q/pop-matrix))
 
   ;; draw target
-  (let [[x y] (:target @state)]
+  (let [[x y] (:target @seek-state)]
     (q/ellipse x y 20 20))
 
-  (swap! state assoc :target [(q/mouse-x) (q/mouse-y)])
+  (swap! seek-state assoc :target [(q/mouse-x) (q/mouse-y)])
   (if (q/mouse-pressed?)
-    (swap! state update :driver #(flee % (:target @state)))
-    (swap! state update :driver #(seek % (:target @state))))
-  (println (:pos (:driver @state))))
+    (swap! seek-state update :driver #(flee % (:target @seek-state)))
+    (swap! seek-state update :driver #(seek % (:target @seek-state)))))
 
 
 (if (.getElementById js/document canvas-id)
@@ -90,4 +89,88 @@
       :title "autonomous"
       :setup setup
       :draw draw
+      :size [width height])))
+
+;; ---
+
+(def pursue-state (atom nil))
+
+
+(defn pursue [pv tv]
+  (let [pursuit-v (map -
+                       (map + (:pos tv) (u/scale-vector (:vel tv) 10))
+                       (:pos pv))
+        ; limit speed
+        desiredv (u/set-magnitude pursuit-v (:max-speed pv))
+        ; steering vector is distance minus current vel
+        steerv (u/vlimit (map - desiredv (:vel pv)) (:max-force pv))
+        ; apply force
+        new-vel (map + (:vel pv) steerv)
+        new-pos (u/edges (map + (:pos pv) new-vel) width height)]
+    (assoc pv :vel new-vel :pos new-pos)))
+
+(defn evade [pv tv]
+  (let [pursuit-v (u/scale-vector (map -
+                                       (map + (:pos tv) (u/scale-vector (:vel tv) 10))
+                                       (:pos pv))
+                                  -1)
+        desiredv (u/set-magnitude pursuit-v (:max-speed pv))
+        ; steering vector is distance minus current vel
+        steerv (u/vlimit (map - desiredv (:vel pv)) (:max-force pv))
+        ; apply force
+        new-vel (map + (:vel pv) steerv)
+        new-pos (u/edges (map + (:pos pv) new-vel) width height)]
+    (assoc pv :vel new-vel :pos new-pos)))
+
+(defn pursue-setup []
+  (println "pursue setup")
+  (reset! pursue-state {:driver (->Vehicle [10 10] [0 0] 0.2 4 7)
+                        :target (->Vehicle [100 100] [1 0])}))
+
+(defn update-target [t]
+  (let [next-pos (u/edges (map + (:pos t) (:vel t)) width height)
+        next-vel [(- 5  (rand-int 10)) (- 5  (rand-int 10))]]
+    (assoc t :pos next-pos)))
+
+
+(defn pursue-draw []
+  (q/background 51)
+  (q/no-stroke)
+  ;; (q/frame-rate 1)
+
+  draw vehicle
+  (let [driver (:driver @pursue-state)
+        [x y] (:pos driver)
+        r (:r driver)]
+    (q/stroke 255)
+    (q/stroke-weight 2)
+    (q/fill 255)
+    (q/push-matrix)
+    (q/translate x y)
+    (q/rotate (u/vheading (:vel driver)))
+    (q/triangle (- r) (/ (- r) 2)
+                (- r) (/ r 2)
+                r 0)
+    (q/pop-matrix))
+
+  ;; draw target
+  (let [[x y] (:pos (:target @pursue-state))]
+    (q/ellipse x y 20 20))
+  ;; update target
+  (swap! pursue-state update :target update-target)
+
+  (if (q/mouse-pressed?)
+    (swap! pursue-state update :driver #(evade % (:target @pursue-state)))
+    (swap! pursue-state update :driver #(pursue % (:target @pursue-state))))
+  )
+
+
+(if (.getElementById js/document canvas-id)
+  (do
+    (u/create-div canvas-id "pursue")
+    (q/defsketch fv
+      :host "pursue"
+      :title "pursue"
+      :setup pursue-setup
+      :draw pursue-draw
       :size [width height])))

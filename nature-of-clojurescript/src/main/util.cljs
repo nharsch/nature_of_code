@@ -58,3 +58,9 @@
   (if (< (vmag v) limit-mag)
     v
     (set-magnitude v limit-mag)))
+
+
+(defn edges [posv width height]
+  "constrain position wrapped to canvas size"
+  (let [[x y] posv]
+       [(mod x width) (mod y height)]))
