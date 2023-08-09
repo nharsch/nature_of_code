@@ -50,3 +50,6 @@
   (let [current-magnitude (vmag v)
         scale-factor (/ new-magnitude current-magnitude)]
     (scale-vector v scale-factor)))
+
+(defn vheading [vec]
+  (Math/atan2 (second vec) (first vec)))

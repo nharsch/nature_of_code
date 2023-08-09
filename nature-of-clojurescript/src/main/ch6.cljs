@@ -13,7 +13,7 @@
 ; stateful!
 (def state (atom nil))
 
-(defrecord Vehicle [pos vel max-force max-speed orientation])
+(defrecord Vehicle [pos vel max-force max-speed r])
 
 
 (defn steer-vehicle-to-target [v target-posv]
@@ -32,7 +32,7 @@
   )
 
 (defn setup []
-  (reset! state {:driver (->Vehicle [10 10] [0 0] 10 1)
+  (reset! state {:driver (->Vehicle [10 10] [0 0] 10 1 10)
                  :target [200 200]}))
 
 (defn draw []
@@ -41,8 +41,19 @@
   ;; (q/frame-rate 1)
 
   ;; draw vehicle
-  (let [[x y] (get-in @state [:driver :pos])]
-    (q/rect x y 10 10))
+  (let [driver (:driver @state)
+        [x y] (:pos driver)
+        r (:r driver)]
+    (q/stroke 255)
+    (q/stroke-weight 2)
+    (q/fill 255)
+    (q/push-matrix)
+    (q/translate x y)
+    (q/rotate (u/vheading (:vel driver)))
+    (q/triangle (- r) (/ (- r) 2)
+                (- r) (/ r 2)
+                r 0)
+    (q/pop-matrix))
 
   ;; draw target
   (let [[x y] (:target @state)]
