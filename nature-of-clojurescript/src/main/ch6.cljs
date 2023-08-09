@@ -16,7 +16,7 @@
 (defrecord Vehicle [pos vel max-force max-speed r])
 
 
-(defn steer-vehicle-to-target [v target-posv]
+(defn seek [v target-posv]
   (let [desiredv (u/set-magnitude (map - target-posv (:pos v))
                                   (:max-speed v))
         ; steering vector is distance minus current vel
@@ -27,8 +27,20 @@
         ]
     (assoc v :vel new-vel :pos new-pos)))
 
+(defn flee [v target-posv]
+  (let [; desired vectir is opposite
+        desiredv (u/scale-vector (map - target-posv (:pos v))
+                                  -1)
+        ; steering vector is distance minus current vel
+        steerv (u/vlimit (map - desiredv (:vel v)) (:max-force v))
+        ; apply force
+        new-vel (map + (:vel v) steerv)
+        new-pos (map + (:pos v) new-vel)
+        ]
+    (assoc v :vel new-vel :pos new-pos)))
+
 (comment
-  (steer-vehicle-to-target (->Vehicle [100 100] [0 0] 10 10) [1 1])
+  (seek (->Vehicle [100 100] [0 0] 10 10) [1 1])
   )
 
 (defn setup []
@@ -64,7 +76,9 @@
     (q/ellipse x y 20 20))
 
   (swap! state assoc :target [(q/mouse-x) (q/mouse-y)])
-  (swap! state update :driver #(steer-vehicle-to-target % (:target @state)))
+  (if (q/mouse-pressed?)
+    (swap! state update :driver #(flee % (:target @state)))
+    (swap! state update :driver #(seek % (:target @state))))
   (println (:pos (:driver @state))))
 
 
