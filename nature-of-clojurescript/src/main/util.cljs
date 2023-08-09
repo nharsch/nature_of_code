@@ -53,3 +53,8 @@
 
 (defn vheading [vec]
   (Math/atan2 (second vec) (first vec)))
+
+(defn vlimit [v limit-mag]
+  (if (< (vmag v) limit-mag)
+    v
+    (set-magnitude v limit-mag)))

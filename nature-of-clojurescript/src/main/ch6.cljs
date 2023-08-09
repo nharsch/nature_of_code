@@ -20,7 +20,7 @@
   (let [desiredv (u/set-magnitude (map - target-posv (:pos v))
                                   (:max-speed v))
         ; steering vector is distance minus current vel
-        steerv (map - desiredv (:vel v))
+        steerv (u/vlimit (map - desiredv (:vel v)) (:max-force v))
         ; apply force
         new-vel (map + (:vel v) steerv)
         new-pos (map + (:pos v) new-vel)
@@ -32,7 +32,11 @@
   )
 
 (defn setup []
-  (reset! state {:driver (->Vehicle [10 10] [0 0] 10 1 10)
+  (reset! state {:driver (->Vehicle [10 10]
+                                    [0 0]
+                                    0.2
+                                    4
+                                    7)
                  :target [200 200]}))
 
 (defn draw []
