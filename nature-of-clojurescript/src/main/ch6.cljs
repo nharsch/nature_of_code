@@ -95,10 +95,11 @@
 
 (def pursue-state (atom nil))
 
+(def lookahead-steps 7)
 
 (defn pursue [pv tv]
   (let [pursuit-v (map -
-                       (map + (:pos tv) (u/scale-vector (:vel tv) 3))
+                       (map + (:pos tv) (u/scale-vector (:vel tv) lookahead-steps))
                        (:pos pv))
         ; limit speed
         desiredv (u/set-magnitude pursuit-v (:max-speed pv))
@@ -106,14 +107,16 @@
         steerv (u/vlimit (map - desiredv (:vel pv)) (:max-force pv))
         ; apply force
         new-vel (map + (:vel pv) steerv)
-        new-pos (u/edges (map + (:pos pv) new-vel) width height)]
+        new-pos (u/edges (map + (:pos pv) (:vel pv)) width height)]
     ;; slowdown on arrival
-    (let [current-speed (u/vmag new-vel)
-          distance (u/vmag (map - (:pos tv) (:pos pv)))]
-      (if (< distance (:r tv))
-        (assoc pv
-               :vel (u/scale-vector new-vel (u/maprange [0 (:r tv)] [0 (:max-speed tv)] current-speed))
-               :pos new-pos)
+    (let [distance (u/vmag (map - (:pos tv) (:pos pv)))
+          slowdown-r (* 1.7 (:r tv))]
+      (if (< distance slowdown-r)
+        (do
+          (print "withing arrival")
+          (assoc pv
+                 :vel (u/set-magnitude new-vel (u/maprange [0 slowdown-r] [0 (:max-speed tv)] distance))
+                 :pos new-pos))
         (assoc pv :vel new-vel :pos new-pos)))))
 
 (defn evade [pv tv]
@@ -130,20 +133,20 @@
     (assoc pv :vel new-vel :pos new-pos)))
 
 (defn pursue-setup []
-  (println "pursue setup")
-  (reset! pursue-state {:driver (->Vehicle [10 10] [0 0] 0.15 4 7)
+  (reset! pursue-state {:driver (->Vehicle [10 10] [0 0] 0.2 7 7)
                         :target (->Vehicle [100 100] [1 0] 2 5 20)}))
 
 (defn update-target [t]
   (let [next-pos (u/edges (map + (:pos t) (u/vlimit (:vel t) (:max-speed t)))
                           width
                           height)]
-    (assoc t :pos next-pos)))
+    (assoc t :pos next-pos :vel (u/vlimit (:vel t) (:max-speed t)))))
 
 
 (defn pursue-draw []
   (q/background 51)
   (q/no-stroke)
+  ;; (q/frame-rate 10)
 
   ;; draw vehicle
   (let [driver (:driver @pursue-state)
@@ -167,14 +170,13 @@
 
   ;; update target
   (if (< (u/vmag (map - (:pos (:driver @pursue-state)) (:pos (:target @pursue-state))))
-         (/ (:r (:target @pursue-state)) 2))
+         (:r (:target @pursue-state)))
     ; spawn new location & vel if caught
     (swap! pursue-state assoc :target (assoc (:target @pursue-state)
                                              :pos [(rand-int width) (rand-int height)]
                                              :vel [(- 3 (rand-int 6)) (- 3 (rand-int 6))]))
     ; else just update
     (swap! pursue-state update :target update-target))
-
 
   (if (q/mouse-pressed?)
     (swap! pursue-state update :driver #(evade % (:target @pursue-state)))
