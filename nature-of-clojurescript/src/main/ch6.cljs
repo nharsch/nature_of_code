@@ -98,7 +98,7 @@
 
 (defn pursue [pv tv]
   (let [pursuit-v (map -
-                       (map + (:pos tv) (u/scale-vector (:vel tv) 2))
+                       (map + (:pos tv) (u/scale-vector (:vel tv) 3))
                        (:pos pv))
         ; limit speed
         desiredv (u/set-magnitude pursuit-v (:max-speed pv))
@@ -107,11 +107,18 @@
         ; apply force
         new-vel (map + (:vel pv) steerv)
         new-pos (u/edges (map + (:pos pv) new-vel) width height)]
-    (assoc pv :vel new-vel :pos new-pos)))
+    ;; slowdown on arrival
+    (let [current-speed (u/vmag new-vel)
+          distance (u/vmag (map - (:pos tv) (:pos pv)))]
+      (if (< distance (:r tv))
+        (assoc pv
+               :vel (u/scale-vector new-vel (u/maprange [0 (:r tv)] [0 (:max-speed tv)] current-speed))
+               :pos new-pos)
+        (assoc pv :vel new-vel :pos new-pos)))))
 
 (defn evade [pv tv]
   (let [pursuit-v (u/scale-vector (map -
-                                       (map + (:pos tv) (u/scale-vector (:vel tv) 2))
+                                       (map + (:pos tv) (u/scale-vector (:vel tv) 4))
                                        (:pos pv))
                                   -1)
         desiredv (u/set-magnitude pursuit-v (:max-speed pv))
@@ -124,7 +131,7 @@
 
 (defn pursue-setup []
   (println "pursue setup")
-  (reset! pursue-state {:driver (->Vehicle [10 10] [0 0] 0.2 4 7)
+  (reset! pursue-state {:driver (->Vehicle [10 10] [0 0] 0.15 4 7)
                         :target (->Vehicle [100 100] [1 0] 2 5 20)}))
 
 (defn update-target [t]
