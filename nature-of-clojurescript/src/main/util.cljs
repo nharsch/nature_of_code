@@ -33,6 +33,7 @@
         (.append m d)))))
 
 
+;; TODO: replace these to calc with native clojure data structures and replace in code
 (def vadd (.-add Vector))
 (def vsub (.-sub Vector))
 (def vmult (.-mult Vector))

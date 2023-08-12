@@ -81,17 +81,17 @@
     (swap! seek-state update :driver #(seek % (:target @seek-state)))))
 
 
-;; (if (.getElementById js/document canvas-id)
-;;   (do
-;;     (u/create-div canvas-id "autonomous")
-;;     (q/defsketch fv
-;;       :host "autonomous"
-;;       :title "autonomous"
-;;       :setup setup
-;;       :draw draw
-;;       :size [width height])))
+(if (.getElementById js/document canvas-id)
+  (do
+    (u/create-div canvas-id "autonomous")
+    (q/defsketch fv
+      :host "autonomous"
+      :title "autonomous"
+      :setup setup
+      :draw draw
+      :size [width height])))
 
-;; ---
+---
 
 (def pursue-state (atom nil))
 
@@ -133,7 +133,7 @@
     (assoc pv :vel new-vel :pos new-pos)))
 
 (defn pursue-setup []
-  (reset! pursue-state {:driver (->Vehicle [10 10] [0 0] 0.2 7 7)
+  (reset! pursue-state {:driver (->Vehicle [10 10] [0 0] 0.2 7 16)
                         :target (->Vehicle [100 100] [1 0] 2 5 20)}))
 
 (defn update-target [t]
@@ -191,4 +191,68 @@
       :title "pursue"
       :setup pursue-setup
       :draw pursue-draw
+      :size [width height])))
+
+
+(def wander-state (atom nil))
+(def wander-radius 10)
+
+(defrecord Wanderer [pos vel max-force max-speed r wtheta current-path paths])
+
+(defn wander [w]
+  (let [
+                                        ; set new pos from previous vals
+        new-pos (map + (:pos w) (:vel w))
+                                        ; angle relative to the line described by vel vector
+        theta (+ (:wtheta w) (u/vheading (:vel w)))
+        x (* wander-radius (Math/cos theta))
+        y (* wander-radius (Math/sin theta))
+        wp (map +
+                                        ; line of vel * 100 + pos
+                (map +
+                     (u/set-magnitude (:vel w) 100)
+                     (:pos w))
+                                        ; plus x y offset found from angle of wander offset plus wander radius
+                [x y])
+                                        ; steering vector is line from  pos to wp
+        wv (map - wp (:pos w))
+        steer (u/set-magnitude wv (:max-force w))
+        new-vel (u/vlimit  (map + (:vel w) steer) (:max-speed w))
+        new-wt (+ (:wtheta w) (- 0.3 (* 0.6 (rand))))]
+    (assoc w :pos (u/edges new-pos width height) :vel new-vel :wtheta new-wt))
+  )
+
+(defn wander-setup []
+  (reset! wander-state { :w (->Wanderer [100 100] [0.1 0] 0.4 1 16 0)}))
+
+(defn wander-draw []
+  (q/background 51)
+  (q/no-stroke)
+  ;; draw wanderer
+  (let [w (:w @wander-state)
+        [x y] (:pos w)
+        r (:r w)]
+    (q/stroke 255)
+    (q/stroke-weight 2)
+    (q/fill 255)
+    (q/push-matrix)
+    (q/translate x y)
+    (q/rotate (u/vheading (:vel w)))
+    (q/triangle (- r) (/ (- r) 2)
+                (- r) (/ r 2)
+                r 0)
+    (q/pop-matrix))
+  ; update wanderer
+  (swap! wander-state update :w wander)
+  )
+
+
+(if (.getElementById js/document canvas-id)
+  (do
+    (u/create-div canvas-id "wander")
+    (q/defsketch fv
+      :host "wander"
+      :title "wander"
+      :setup wander-setup
+      :draw wander-draw
       :size [width height])))
