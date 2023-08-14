@@ -81,17 +81,17 @@
     (swap! seek-state update :driver #(seek % (:target @seek-state)))))
 
 
-(if (.getElementById js/document canvas-id)
-  (do
-    (u/create-div canvas-id "autonomous")
-    (q/defsketch fv
-      :host "autonomous"
-      :title "autonomous"
-      :setup setup
-      :draw draw
-      :size [width height])))
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "autonomous")
+;;     (q/defsketch fv
+;;       :host "autonomous"
+;;       :title "autonomous"
+;;       :setup setup
+;;       :draw draw
+;;       :size [width height])))
 
----
+;; ---
 
 (def pursue-state (atom nil))
 
@@ -113,7 +113,6 @@
           slowdown-r (* 1.7 (:r tv))]
       (if (< distance slowdown-r)
         (do
-          (print "withing arrival")
           (assoc pv
                  :vel (u/set-magnitude new-vel (u/maprange [0 slowdown-r] [0 (:max-speed tv)] distance))
                  :pos new-pos))
@@ -183,15 +182,15 @@
     (swap! pursue-state update :driver #(pursue % (:target @pursue-state)))))
 
 
-(if (.getElementById js/document canvas-id)
-  (do
-    (u/create-div canvas-id "pursue")
-    (q/defsketch fv
-      :host "pursue"
-      :title "pursue"
-      :setup pursue-setup
-      :draw pursue-draw
-      :size [width height])))
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "pursue")
+;;     (q/defsketch fv
+;;       :host "pursue"
+;;       :title "pursue"
+;;       :setup pursue-setup
+;;       :draw pursue-draw
+;;       :size [width height])))
 
 
 (def wander-state (atom nil))
@@ -247,12 +246,55 @@
   )
 
 
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "wander")
+;;     (q/defsketch fv
+;;       :host "wander"
+;;       :title "wander"
+;;       :setup wander-setup
+;;       :draw wander-draw
+;;       :size [width height])))
+
+
+
+(def angle-state (atom nil))
+
+(defn angle-setup [])
+
+(defn draw-vector [v, pos, scayl]
+  (let [arrow-size 6]
+    (q/push-matrix)
+    (apply q/translate pos)
+    (q/stroke 0)
+    (q/stroke-weight 2)
+    (q/rotate (u/vheading v))
+    (let [len (* scayl (u/vmag v))]
+      (q/line 0 0 len 0)
+      (q/line len 0 (- len arrow-size) arrow-size)
+      (q/line len 0 (- len arrow-size) (- 0 arrow-size)))
+    (q/pop-matrix))
+  )
+
+
+
+(defn angle-draw []
+  (q/background 200)
+  (let [mouseLoc [(q/mouse-x) (q/mouse-y)]
+        centerLoc [(/ width 2) (/ height 2)]
+        ; v is the normalized vector betwee
+        v (map #(* 75 %) (u/vnorm (map - mouseLoc centerLoc)))
+        xaxis [75, 0]]
+    (draw-vector v [(/ width 2) (/ height 2)] 1)
+    (draw-vector xaxis [(/ width 2) (/ height 2) (/ height 2)] 1)))
+
+
 (if (.getElementById js/document canvas-id)
   (do
-    (u/create-div canvas-id "wander")
+    (u/create-div canvas-id "angle-between")
     (q/defsketch fv
-      :host "wander"
-      :title "wander"
-      :setup wander-setup
-      :draw wander-draw
+      :host "angle-between"
+      :title "angle-between"
+      :setup angle-setup
+      :draw angle-draw
       :size [width height])))

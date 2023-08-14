@@ -1,4 +1,5 @@
-(ns util (:require [p5 :refer [Vector]]))
+(ns util (:require [p5 :refer [Vector]]
+                   [util :as u]))
 
 
 (defn render-sketch-to-canvas [setup-fn draw-fn id]
@@ -59,6 +60,21 @@
   (if (< (vmag v) limit-mag)
     v
     (set-magnitude v limit-mag)))
+
+(defn vdot [v1 v2]
+  (reduce + (map * v1 v2)))
+
+(defn vnorm [v]
+  (let [mag (vmag v)]
+    (if (zero? mag)
+      v
+      (mapv #(/ % mag) v))))
+
+
+(comment
+  (= 20 (vdot [2 2] [10 0]))
+  (= 1 (Math/round (vmag (vnorm [5 5]))))
+  )
 
 
 (defn edges [posv width height]
