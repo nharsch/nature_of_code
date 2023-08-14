@@ -70,10 +70,15 @@
       v
       (mapv #(/ % mag) v))))
 
+(defn vector-projection [v1 v2]
+  (let [nv2 (vnorm v2)]
+    (map #(* % (vdot v1 (vnorm nv2))) nv2)))
+
 
 (comment
   (= 20 (vdot [2 2] [10 0]))
   (= 1 (Math/round (vmag (vnorm [5 5]))))
+  (= [2 0] (vector-projection [2 2] [4 0]))
   )
 
 

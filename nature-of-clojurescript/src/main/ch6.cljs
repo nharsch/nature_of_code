@@ -258,7 +258,6 @@
 
 
 
-(def angle-state (atom nil))
 
 (defn angle-setup [])
 
@@ -273,9 +272,7 @@
       (q/line 0 0 len 0)
       (q/line len 0 (- len arrow-size) arrow-size)
       (q/line len 0 (- len arrow-size) (- 0 arrow-size)))
-    (q/pop-matrix))
-  )
-
+    (q/pop-matrix)))
 
 
 (defn angle-draw []
@@ -297,4 +294,46 @@
       :title "angle-between"
       :setup angle-setup
       :draw angle-draw
+      :size [width height])))
+
+
+(defn projection-setup [])
+
+
+(defn projection-draw []
+  (q/background 0)
+  (q/stroke-weight 4)
+  (q/stroke 255)
+  (let [pos [100 200]
+        mouse [(q/mouse-x) (q/mouse-y)]
+        a (map - mouse pos)
+        path [200 100]
+        v (u/vector-projection a path)]
+
+    (q/line (first pos)
+            (last pos)
+            (+ (first pos) (first path))
+            (+ (last pos) (last path)))
+    (q/no-stroke)
+    (q/fill 0 255 0)
+    (q/ellipse (+ (first a) (first pos))
+               (+ (last a) (last pos))
+               16 16)
+    (q/fill 255 0 0)
+    (q/ellipse (+ (first v) (first pos))
+               (+ (last v) (last pos))
+               16 16)
+
+    )
+  )
+
+
+(if (.getElementById js/document canvas-id)
+  (do
+    (u/create-div canvas-id "projection-between")
+    (q/defsketch fv
+      :host "projection-between"
+      :title "projection-between"
+      :setup projection-setup
+      :draw projection-draw
       :size [width height])))
