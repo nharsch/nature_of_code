@@ -33,55 +33,6 @@
         (.setAttribute d "id" div-id)
         (.append m d)))))
 
-
-;; TODO: replace these to calc with native clojure data structures and replace in code
-(def vadd (.-add Vector))
-(def vsub (.-sub Vector))
-(def vmult (.-mult Vector))
-(def vdiv (.-div Vector))
-(def from-angle (.-fromAngle Vector))
-
-; clojure vector support
-(defn vmag [v]
-  (Math/sqrt (reduce + (map #(* % %) v))))
-
-(defn scale-vector [v scale-factor]
-  (map (partial * scale-factor) v))
-
-(defn set-magnitude [v new-magnitude]
-  (let [current-magnitude (vmag v)
-        scale-factor (/ new-magnitude current-magnitude)]
-    (scale-vector v scale-factor)))
-
-(defn vheading [vec]
-  (Math/atan2 (second vec) (first vec)))
-
-(defn vlimit [v limit-mag]
-  (if (< (vmag v) limit-mag)
-    v
-    (set-magnitude v limit-mag)))
-
-(defn vdot [v1 v2]
-  (reduce + (map * v1 v2)))
-
-(defn vnorm [v]
-  (let [mag (vmag v)]
-    (if (zero? mag)
-      v
-      (mapv #(/ % mag) v))))
-
-(defn vector-projection [v1 v2]
-  (let [nv2 (vnorm v2)]
-    (map #(* % (vdot v1 (vnorm nv2))) nv2)))
-
-
-(comment
-  (= 20 (vdot [2 2] [10 0]))
-  (= 1 (Math/round (vmag (vnorm [5 5]))))
-  (= [2 0] (vector-projection [2 2] [4 0]))
-  )
-
-
 (defn edges [posv width height]
   "constrain position wrapped to canvas size"
   (let [[x y] posv]
