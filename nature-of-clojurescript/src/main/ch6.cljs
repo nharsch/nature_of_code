@@ -353,12 +353,68 @@
 )
 
 
+;; (if (.getElementById js/document canvas-id)
+;;   (do
+;;     (u/create-div canvas-id "simple-path-follow-between")
+;;     (q/defsketch fv
+;;       :host "simple-path-follow-between"
+;;       :title "simple-path-follow-between"
+;;       :setup simple-path-follow-setup
+;;       :draw simple-path-follow-draw
+;;       :size [width height])))
+
+; ---
+(def complex-path-follow-state (atom nil))
+(defn complex-path-follow-setup []
+  (reset! complex-path-follow-state {:driver (->Vehicle [10 (/ height 2)]
+                                                        [1 0]
+                                                        0.2
+                                                        2
+                                                        7)
+                                    :path-points [[0 (/ height 2)]
+                                                  [(/ width 5) (/ height 2)]
+                                                  [(* 2 (/ width 5)) (* height (rand))]
+                                                  [(* 3 (/ width 5)) (* height (rand))]
+                                                  [(* 4 (/ width 5)) (* height (rand))]
+                                                  [width (/ height 2)]]
+                                    :path-radius 20
+                                    }))
+
+
+
+(defn dist-to-path [pos path]
+  (lv/dist pos (lv/get-normal-point pos (:start path) (:end path))))
+
+(defn complex-path-follow-draw []
+  (q/background 0)
+  (let [
+        pos (:pos (:driver @complex-path-follow-state))
+        paths (map (fn [[a b]] (->Path a b (:path-radius @complex-path-follow-state)))
+                   (partition 2 1 (:path-points @complex-path-follow-state)))
+        closest-path (apply min-key #(dist-to-path pos %) paths)
+        ]
+    (println (map #(dist-to-path pos %) paths))
+    (doseq [p paths] (show-path p))
+    (vh/show-vehicle (:driver @complex-path-follow-state))
+    (swap! complex-path-follow-state update :driver #(-> %
+                                                         (vh/follow-path closest-path)
+                                                         vh/update-pos
+                                                         (update :pos u/edges width height)
+                                                         )
+           )
+    )
+
+
+  ;; TODO: update
+)
+
+
 (if (.getElementById js/document canvas-id)
   (do
-    (u/create-div canvas-id "simple-path-follow-between")
+    (u/create-div canvas-id "complex-path-follow-between")
     (q/defsketch fv
-      :host "simple-path-follow-between"
-      :title "simple-path-follow-between"
-      :setup simple-path-follow-setup
-      :draw simple-path-follow-draw
+      :host "complex-path-follow-between"
+      :title "complex-path-follow-between"
+      :setup complex-path-follow-setup
+      :draw complex-path-follow-draw
       :size [width height])))

@@ -67,7 +67,6 @@
   (let [v1 (vsub target start)
         v2 (vsub end start)
         sp (vdot v1 (vnorm v2))]
-    (print v1 v2 sp)
     (-> v2
         vnorm
         (vmult sp)
@@ -75,3 +74,8 @@
 (= [3 0]
    (vector-projection [3 2] [2 0] [4 0])
    )
+
+(defn get-normal-point [target start end]
+  (let [ap (vsub target start)
+        ab (vnorm (vsub end start))]
+    (vadd start (vmult ab (vdot ap ab)))))
