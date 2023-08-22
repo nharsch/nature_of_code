@@ -4,7 +4,7 @@
             [util :as u]
             [lvector :as lv]
             [vehicle :as vh :refer [->Vehicle]]
-            [path :refer [->Path show-path]]))
+            [path :refer [->Path show-path dist-to-path]]))
 
 (def canvas-id "ch6-canvas")
 (def width 400)
@@ -302,18 +302,18 @@
         a (map - mouse pos)
         path [200 100]
         v (lv/vector-projection a path)]
-    (q/line (first pos)
-            (last pos)
-            (+ (first pos) (first path))
-            (+ (last pos) (last path)))
+    (q/line (pos 0)
+            (pos 1)
+            (+ (pos 0) (path 0))
+            (+ (pos 1) (path 1)))
     (q/no-stroke)
     (q/fill 0 255 0)
-    (q/ellipse (+ (first a) (first pos))
-               (+ (last a) (last pos))
+    (q/ellipse (+ (a 0) (pos 0))
+               (+ (a 1) (pos 1))
                16 16)
     (q/fill 255 0 0)
-    (q/ellipse (+ (first v) (first pos))
-               (+ (last v) (last pos))
+    (q/ellipse (+ (v 0) (pos 0))
+               (+ (v 1) (pos 1))
                16 16)))
 
 
@@ -334,7 +334,7 @@
   (reset! simple-path-follow-state { :driver (->Vehicle [10 10]
                                                         [1 1]
                                                         0.2
-                                                        4
+                                                        2
                                                         7)
                                     :path (->Path [0 (/ height 2)] [width (/ height 2)] 20)
                                     }))
@@ -365,25 +365,25 @@
 
 ; ---
 (def complex-path-follow-state (atom nil))
+(defn rand-height []
+  (+ (/ height 2)
+     (* 0.5 (* height (- 0.5 (rand))))))
 (defn complex-path-follow-setup []
   (reset! complex-path-follow-state {:driver (->Vehicle [10 (/ height 2)]
-                                                        [1 0]
+                                                        [1 0.5]
                                                         0.2
-                                                        2
+                                                        4
                                                         7)
                                     :path-points [[0 (/ height 2)]
                                                   [(/ width 5) (/ height 2)]
-                                                  [(* 2 (/ width 5)) (* height (rand))]
-                                                  [(* 3 (/ width 5)) (* height (rand))]
-                                                  [(* 4 (/ width 5)) (* height (rand))]
+                                                  [(* 2 (/ width 5)) (rand-height)]
+                                                  [(* 3 (/ width 5)) (rand-height)]
+                                                  [(* 4 (/ width 5)) (rand-height)]
                                                   [width (/ height 2)]]
-                                    :path-radius 20
-                                    }))
+                                    :path-radius 20}))
 
 
 
-(defn dist-to-path [pos path]
-  (lv/dist pos (lv/get-normal-point pos (:start path) (:end path))))
 
 (defn complex-path-follow-draw []
   (q/background 0)
@@ -393,19 +393,15 @@
                    (partition 2 1 (:path-points @complex-path-follow-state)))
         closest-path (apply min-key #(dist-to-path pos %) paths)
         ]
-    (println (map #(dist-to-path pos %) paths))
-    (doseq [p paths] (show-path p))
+    (doseq [p paths]
+      (println (= p closes-path))
+      (show-path p (= p closest-path)))
     (vh/show-vehicle (:driver @complex-path-follow-state))
     (swap! complex-path-follow-state update :driver #(-> %
                                                          (vh/follow-path closest-path)
                                                          vh/update-pos
-                                                         (update :pos u/edges width height)
-                                                         )
-           )
-    )
+                                                         (update :pos u/edges width height))))
 
-
-  ;; TODO: update
 )
 
 

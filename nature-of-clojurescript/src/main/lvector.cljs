@@ -1,18 +1,19 @@
 (ns lvector
   (:require [cljs.math :as math]))
 
+
 ; TODO: move inline tests to test suite?
 
-(defn vadd [v1 v2] (map + v1 v2))
+(defn vadd [v1 v2] (mapv + v1 v2))
 (= (vadd [1 2] [3 4]) [4 6])
 
-(defn vsub [v1 v2] (map - v1 v2))
+(defn vsub [v1 v2] (mapv - v1 v2))
 (= (vsub [3 4] [1 2]) [2 2])
 
-(defn vmult [v s] (map #(* % s) v))
+(defn vmult [v s] (mapv #(* % s) v))
 (= (vmult [1 2] 2) [2 4])
 
-(defn vdiv [v s] (map #(/ % s) v))
+(defn vdiv [v s] (mapv #(/ % s) v))
 (= (vdiv [1 2] 2) [0.5 1])
 
 (defn from-angle [radians]
@@ -44,7 +45,7 @@
   (abs (vmag (vsub v1 v2))))
 
 (defn vheading [vec]
-  (Math/atan2 (second vec) (first vec)))
+  (math/atan2 (second vec) (first vec)))
 (= (vheading [1 1]) (math/to-radians 45))
 
 (defn vlimit [v limit-mag]
@@ -79,3 +80,15 @@
   (let [ap (vsub target start)
         ab (vnorm (vsub end start))]
     (vadd start (vmult ab (vdot ap ab)))))
+
+(defn point-on-line-segment? [point p1 p2]
+  (let [v1 (vsub p2 p1)
+        v2 (vsub point p1)
+        cross-product (- (* (v1 0) (v2 1)) (* (v1 1) (v2 0)))
+        dot-product1 (+ (* (v1 0) (v2 0)) (* (v1 1) (v2 1)))
+        dot-product2 (+ (* (v1 0) (v1 0)) (* (v1 1) (v1 1)))]
+    (and (zero? cross-product)
+         (<= 0 dot-product1 dot-product2))))
+(do
+  (= true (point-on-line-segment? [3 1] [0 1] [4 1]))
+  (= false (point-on-line-segment? [3 1] [0 1] [2 1])))
